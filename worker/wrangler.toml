@@ -1,0 +1,27 @@
+name = "forytography-shop"
+main = "src/index.js"
+compatibility_date = "2026-01-01"
+
+# ---- Private storage bucket for your full-resolution, un-watermarked originals ----
+# Create this bucket in the Cloudflare dashboard first (R2 -> Create bucket -> name it exactly as below),
+# then upload your original photo files into it under an "originals/" folder,
+# e.g. originals/DSC_0707.jpg — matching the r2Key values in src/index.js.
+[[r2_buckets]]
+binding = "PHOTOS_BUCKET"
+bucket_name = "forytography-originals"
+
+# ---- Client album metadata (which photos belong to which client, passkey hashes) ----
+# Create this namespace first: wrangler kv namespace create ALBUM_KV
+# Then paste the "id" it prints into this line.
+[[kv_namespaces]]
+binding = "ALBUM_KV"
+id = "7a92a5f216ba4adeb5cf821c910a36a6"
+
+# ---- Non-secret settings ----
+[vars]
+SITE_URL = "https://forytography.com"
+ALLOWED_ORIGIN = "https://forytography.com"
+
+# ---- Secret settings (do NOT put these here — set them with the commands below instead) ----
+# wrangler secret put STRIPE_SECRET_KEY
+# wrangler secret put ALBUM_MASTER_KEY      <- your personal "always works" passkey

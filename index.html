@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forytography — Treasure Valley Photography</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;900&family=Newsreader:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EFF1EA;
+    --paper:#F8F7F2;
+    --ink:#1F2620;
+    --ink-soft:#4B5449;
+    --gold:#C99A3B;
+    --sage:#6B7A5E;
+    --blue:#4A6A74;
+    --line:#C9C6BC;
+    --wrap: 1180px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Newsreader', serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3, .display{
+    font-family:'Big Shoulders Display', sans-serif;
+    text-transform:uppercase;
+    letter-spacing:0.01em;
+    line-height:0.92;
+    margin:0;
+    font-weight:900;
+  }
+  .mono{
+    font-family:'JetBrains Mono', monospace;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+  }
+  a{color:inherit;}
+  img{display:block; max-width:100%;}
+
+  /* ---------- NAV ---------- */
+  .nav{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px clamp(20px,4vw,56px);
+    background:rgba(239,241,234,0.85);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav .logo{ font-size:22px; font-weight:900; letter-spacing:0.02em; }
+  .nav .links{ display:flex; gap:clamp(14px,2vw,32px); }
+  .nav .links a{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
+    text-decoration:none; color:var(--ink-soft);
+    border-bottom:1px solid transparent;
+    padding-bottom:3px;
+    transition:color .2s, border-color .2s;
+  }
+  .nav .links a:hover{ color:var(--ink); border-color:var(--gold); }
+
+  /* ---------- HERO ---------- */
+  /* No cropping: the frame's height follows the image's own ratio. */
+  .hero{
+    position:relative;
+  }
+  .hero-frame{
+    position:relative; width:100%; height:100vh; min-height:560px; overflow:hidden;
+  }
+  .hero-frame img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .hero-frame::after{
+    content:"";
+    position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(20,24,18,0.05) 0%, rgba(20,24,18,0.05) 55%, rgba(12,15,10,0.72) 100%);
+    pointer-events:none;
+  }
+  .hero-content{
+    position:absolute; left:0; right:0; bottom:0; z-index:2;
+    padding:0 clamp(20px,4vw,56px) 48px;
+    color:#F7F6F1;
+  }
+  .hero-eyebrow{ font-size:12px; margin-bottom:14px; color:#E7E3D6; opacity:0.9; }
+  .hero h1{ font-size:clamp(46px, 9vw, 128px); color:#FBFAF5; }
+  .hero-sub{
+    margin-top:16px; max-width:560px; font-size:16px; line-height:1.5;
+    color:#E9E6DA; font-style:italic;
+  }
+
+  /* ---------- CONTOUR DIVIDER (signature) ---------- */
+  .contour{ width:100%; display:block; background:var(--bg); }
+  .contour path{ fill:none; stroke:var(--line); stroke-width:1; }
+  .contour path.accent{ stroke:var(--gold); stroke-width:1.4; }
+  .contour.animate path{
+    stroke-dasharray:2000; stroke-dashoffset:2000;
+    animation:draw 2.6s ease forwards;
+  }
+  .contour.animate path:nth-child(2){ animation-delay:.15s; }
+  .contour.animate path:nth-child(3){ animation-delay:.3s; }
+  @keyframes draw{ to{ stroke-dashoffset:0; } }
+
+  section{ padding:96px clamp(20px,4vw,56px); }
+
+  /* ---------- ABOUT ---------- */
+  .about{
+    display:grid; grid-template-columns:0.85fr 1.15fr; gap:clamp(32px,6vw,80px);
+    max-width:var(--wrap); margin:0 auto; align-items:center;
+  }
+  .about-img{ position:relative; }
+  .about-img img{ width:100%; height:auto; filter:grayscale(0.08) saturate(0.95); cursor:pointer; }
+  .about-tag{
+    position:absolute; bottom:-16px; left:-16px;
+    background:var(--ink); color:var(--paper);
+    padding:8px 14px; font-size:10px;
+  }
+  .eyebrow{ font-size:12px; color:var(--sage); margin-bottom:16px; display:block; }
+  .about h2{ font-size:clamp(34px,5vw,54px); margin-bottom:22px; }
+  .about p{ font-size:17px; line-height:1.7; color:var(--ink-soft); margin:0 0 16px; }
+  .about-contact{
+    margin-top:28px; display:inline-flex; align-items:center; gap:10px;
+    padding:12px 20px; background:var(--ink); color:var(--paper);
+    text-decoration:none; font-family:'JetBrains Mono',monospace;
+    font-size:12px; letter-spacing:0.08em;
+    transition:background .2s;
+  }
+  .about-contact:hover{ background:var(--sage); }
+
+  /* ---------- GALLERY (masonry columns, no cropping) ---------- */
+  .gallery-head{ max-width:var(--wrap); margin:0 auto 40px; text-align:center; }
+  .gallery-head h2{ font-size:clamp(36px,6vw,64px); }
+  .gallery-head .eyebrow{ text-align:center; }
+
+  .filters{
+    display:flex; justify-content:center; gap:10px; flex-wrap:wrap;
+    margin:32px auto 56px; max-width:var(--wrap);
+  }
+  .filters button{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px; letter-spacing:0.1em; text-transform:uppercase;
+    background:transparent; border:1px solid var(--line);
+    color:var(--ink-soft); padding:10px 18px; cursor:pointer;
+    transition:all .2s;
+  }
+  .filters button:hover{ border-color:var(--ink); color:var(--ink); }
+  .filters button.active{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+
+  .grid{
+    max-width:var(--wrap); margin:0 auto;
+    column-count:3; column-gap:14px;
+  }
+  .card{
+    position:relative; overflow:hidden; background:var(--ink);
+    margin-bottom:14px; break-inside:avoid; cursor:zoom-in;
+  }
+  .card img{
+    width:100%; height:auto; display:block;
+    transition:transform .5s cubic-bezier(.2,.7,.3,1), filter .5s;
+  }
+  .card:hover img{ transform:scale(1.03); filter:brightness(1.03); }
+  .card-cap{
+    position:absolute; left:0; right:0; bottom:0;
+    padding:14px 16px;
+    background:linear-gradient(0deg, rgba(10,12,9,0.75) 0%, rgba(10,12,9,0) 100%);
+    color:#F3F1E8; font-family:'JetBrains Mono',monospace;
+    font-size:10.5px; letter-spacing:0.06em;
+    opacity:0; transform:translateY(6px);
+    transition:opacity .3s, transform .3s;
+    pointer-events:none;
+  }
+  .card:hover .card-cap{ opacity:1; transform:translateY(0); }
+  .card[data-hidden="true"]{ display:none; }
+
+  .card-buy{
+    position:absolute; top:0; right:0;
+    padding:10px 12px;
+    display:flex; align-items:center; gap:10px;
+    background:linear-gradient(180deg, rgba(10,12,9,0.7) 0%, rgba(10,12,9,0) 100%);
+    opacity:0; transform:translateY(-6px);
+    transition:opacity .3s, transform .3s;
+  }
+  .card:hover .card-buy{ opacity:1; transform:translateY(0); }
+  .card-buy .price{
+    color:#F3F1E8; font-size:12px; letter-spacing:0.06em;
+  }
+  .buy-btn{
+    font-size:10.5px; letter-spacing:0.08em;
+    background:var(--gold); color:#241C0D; border:none;
+    padding:8px 12px; cursor:pointer;
+    transition:background .2s, transform .15s;
+  }
+  .buy-btn:hover{ background:#DCAE52; }
+  .buy-btn:active{ transform:scale(0.96); }
+  .buy-btn[disabled]{ opacity:0.6; cursor:wait; }
+
+  @media (max-width:900px){ .grid{ column-count:2; } }
+  @media (max-width:560px){ .grid{ column-count:1; } }
+
+  /* ---------- LIGHTBOX ---------- */
+  .lightbox{
+    position:fixed; inset:0; z-index:1000;
+    background:rgba(12,14,10,0.94);
+    display:flex; align-items:center; justify-content:center;
+    padding:5vh 5vw;
+    opacity:0; visibility:hidden;
+    transition:opacity .25s ease;
+  }
+  .lightbox.active{ opacity:1; visibility:visible; }
+  .lightbox img{
+    max-width:90vw; max-height:88vh;
+    width:auto; height:auto;
+    object-fit:contain;
+    box-shadow:0 30px 80px rgba(0,0,0,0.5);
+    transform:scale(0.97);
+    transition:transform .25s ease;
+  }
+  .lightbox.active img{ transform:scale(1); }
+  .lightbox-cap{
+    position:absolute; left:0; right:0; bottom:24px; text-align:center;
+    color:#E9E6DA; font-family:'JetBrains Mono',monospace;
+    font-size:11px; letter-spacing:0.1em;
+  }
+  .lightbox-close{
+    position:absolute; top:22px; right:clamp(20px,4vw,40px);
+    width:42px; height:42px; border-radius:50%;
+    background:transparent; border:1px solid rgba(233,230,218,0.4);
+    color:#E9E6DA; font-size:20px; line-height:1; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:background .2s, border-color .2s;
+  }
+  .lightbox-close:hover{ background:rgba(233,230,218,0.12); border-color:#E9E6DA; }
+
+  /* ---------- FOOTER ---------- */
+  .footer{ background:var(--ink); color:var(--paper); padding:88px clamp(20px,4vw,56px) 40px; }
+  .footer-inner{
+    max-width:var(--wrap); margin:0 auto;
+    display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:32px;
+  }
+  .footer h2{ font-size:clamp(40px,7vw,88px); color:#F6F4EC; }
+  .footer .cta{ margin-top:18px; font-size:15px; color:#CFCBBB; max-width:420px; font-style:italic; }
+  .footer a.ig{
+    text-decoration:none; color:var(--gold);
+    font-family:'JetBrains Mono',monospace; font-size:14px; letter-spacing:0.06em;
+    border-bottom:1px solid var(--gold); padding-bottom:2px;
+  }
+  .footer-meta{ font-family:'JetBrains Mono',monospace; font-size:10px; color:#8B9186; text-align:right; }
+  .footer-bottom{
+    max-width:var(--wrap); margin:64px auto 0; padding-top:20px;
+    border-top:1px solid #363C31;
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;
+    font-family:'JetBrains Mono',monospace; font-size:10px; color:#7D8377;
+  }
+
+  @media (max-width:760px){
+    .nav .links{ display:none; }
+    .about{ grid-template-columns:1fr; }
+    .about-img{ order:-1; }
+    .footer-inner{ flex-direction:column; align-items:flex-start; }
+    .footer-meta{ text-align:left; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="logo">FORYTOGRAPHY</div>
+  <div class="links">
+    <a href="#about">About</a>
+    <a href="#work">Work</a>
+    <a href="#contact">Contact</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-frame">
+    <img src="images/DSC_0720.jpg" alt="Sunset over a mountain lodge in the Sawtooth Valley" class="lightbox-trigger" data-cap="Sawtooth Valley · Nature">
+    <div class="hero-content">
+      <div class="hero-eyebrow mono">Treasure Valley, Idaho</div>
+      <h1>Forytography</h1>
+      <p class="hero-sub">Landscapes, wildlife, portraits, and live events — shot around the Boise area and out into the Idaho backcountry.</p>
+    </div>
+  </div>
+</header>
+
+<svg class="contour animate" viewBox="0 0 1200 80" preserveAspectRatio="none" style="height:80px;">
+  <path d="M0,40 C150,10 250,70 400,45 C550,20 650,60 800,35 C950,10 1050,55 1200,30" />
+  <path class="accent" d="M0,55 C150,30 250,85 400,60 C550,35 650,75 800,50 C950,25 1050,65 1200,45" />
+  <path d="M0,20 C150,-5 250,45 400,25 C550,5 650,40 800,15 C950,-5 1050,35 1200,10" />
+</svg>
+
+<section class="about" id="about">
+  <div class="about-img">
+    <img src="images/DSC_0859.jpg" alt="Portrait of the photographer holding a camera to his face" class="lightbox-trigger" data-cap="Behind the lens">
+    <div class="about-tag mono">Behind the lens</div>
+  </div>
+  <div>
+    <span class="eyebrow mono">Who's shooting</span>
+    <h2>Based in the Treasure Valley,<br>at home in the backcountry.</h2>
+    <p>Forytography is built around whatever's in front of the lens that week — a quiet alpine lake, a squirrel that won't hold still, a couple's portraits, or a drumline mid-performance under the stadium lights.</p>
+    <p>Alongside personal landscape and wildlife work, I volunteer as a photographer for the <strong>Boise Gems</strong>, covering rehearsals and performances throughout their season.</p>
+    <a class="about-contact" href="https://instagram.com/Forytography" target="_blank" rel="noopener">@Forytography on Instagram →</a>
+  </div>
+</section>
+
+<svg class="contour" viewBox="0 0 1200 60" preserveAspectRatio="none" style="height:60px;">
+  <path d="M0,30 C200,5 300,55 500,30 C700,5 800,50 1000,25 C1100,10 1150,35 1200,20" />
+</svg>
+
+<section id="work">
+  <div class="gallery-head">
+    <span class="eyebrow mono">Selected work</span>
+    <h2>The Field Notes</h2>
+  </div>
+
+  <div class="filters">
+    <button class="active" data-filter="all">All</button>
+    <button data-filter="nature">Landscape / Wildlife / Nature</button>
+    <button data-filter="portraits">Portraits</button>
+    <button data-filter="events">Events</button>
+  </div>
+
+  <div class="grid" id="grid">
+
+    <div class="card" data-cat="nature">
+      <img src="images/DSC_0707.jpg" alt="Sawtooth lake at dusk" class="lightbox-trigger" data-cap="Sawtooth Range · Nature">
+      <div class="card-cap mono">Sawtooth Range · Nature</div>
+      <div class="card-buy">
+        <span class="mono price">$15</span>
+        <button class="buy-btn mono" data-photo-id="DSC_0707">Purchase</button>
+      </div>
+    </div>
+
+    <div class="card" data-cat="nature">
+      <img src="images/DSC_0720.jpg" alt="Sunset over a mountain lodge in the Sawtooth Valley" class="lightbox-trigger" data-cap="Sawtooth Valley · Nature">
+      <div class="card-cap mono">Sawtooth Valley · Nature</div>
+      <div class="card-buy">
+        <span class="mono price">$15</span>
+        <button class="buy-btn mono" data-photo-id="DSC_0720">Purchase</button>
+      </div>
+    </div>
+
+    <div class="card" data-cat="events">
+      <img src="images/DSC_2266.jpg" alt="Boise Gems horn player performing at dusk" class="lightbox-trigger" data-cap="Boise Gems · Event">
+      <div class="card-cap mono">Boise Gems · Event</div>
+      <div class="card-buy">
+        <span class="mono price">$20</span>
+        <button class="buy-btn mono" data-photo-id="DSC_2266">Purchase</button>
+      </div>
+    </div>
+
+    <div class="card" data-cat="nature">
+      <img src="images/DSC_9351.jpg" alt="Golden grass hillside at sunset" class="lightbox-trigger" data-cap="High Desert Ridgeline · Nature">
+      <div class="card-cap mono">High Desert Ridgeline · Nature</div>
+      <div class="card-buy">
+        <span class="mono price">$15</span>
+        <button class="buy-btn mono" data-photo-id="DSC_9351">Purchase</button>
+      </div>
+    </div>
+
+    <div class="card" data-cat="portraits">
+      <img src="images/DSC_5497.jpg" alt="Man standing beside a Mazda Miata in the fog" class="lightbox-trigger" data-cap="Foggy Morning · Portrait">
+      <div class="card-cap mono">Foggy Morning · Portrait</div>
+      <div class="card-buy">
+        <span class="mono price">$25</span>
+        <button class="buy-btn mono" data-photo-id="DSC_5497">Purchase</button>
+      </div>
+    </div>
+
+    <div class="card" data-cat="nature">
+      <img src="images/DSC_4872.jpg" alt="Layered blue mountain ridgelines" class="lightbox-trigger" data-cap="Ridgeline Layers · Nature">
+      <div class="card-cap mono">Ridgeline Layers · Nature</div>
+      <div class="card-buy">
+        <span class="mono price">$15</span>
+        <button class="buy-btn mono" data-photo-id="DSC_4872">Purchase</button>
+      </div>
+    </div>
+
+    <div class="card" data-cat="events">
+      <img src="images/DSC_2218.jpg" alt="Boise Gems drummer performing" class="lightbox-trigger" data-cap="Boise Gems · Event">
+      <div class="card-cap mono">Boise Gems · Event</div>
+      <div class="card-buy">
+        <span class="mono price">$20</span>
+        <button class="buy-btn mono" data-photo-id="DSC_2218">Purchase</button>
+      </div>
+    </div>
+
+    <div class="card" data-cat="nature">
+      <img src="images/DSC_4983.jpg" alt="Golden hillside grass" class="lightbox-trigger" data-cap="Evening Light · Nature">
+      <div class="card-cap mono">Evening Light · Nature</div>
+      <div class="card-buy">
+        <span class="mono price">$15</span>
+        <button class="buy-btn mono" data-photo-id="DSC_4983">Purchase</button>
+      </div>
+    </div>
+
+    <div class="card" data-cat="nature">
+      <img src="images/DSC_9546.jpg" alt="Mallard ducks resting on a log in a marsh" class="lightbox-trigger" data-cap="Marsh Life · Wildlife">
+      <div class="card-cap mono">Marsh Life · Wildlife</div>
+      <div class="card-buy">
+        <span class="mono price">$15</span>
+        <button class="buy-btn mono" data-photo-id="DSC_9546">Purchase</button>
+      </div>
+    </div>
+
+    <div class="card" data-cat="portraits">
+      <img src="images/DSC_0859.jpg" alt="Self portrait with a camera" class="lightbox-trigger" data-cap="Self Portrait">
+      <div class="card-cap mono">Self Portrait</div>
+    </div>
+
+    <div class="card" data-cat="nature">
+      <img src="images/DSC_4784.jpg" alt="Camper van parked in the mountains at sunset" class="lightbox-trigger" data-cap="Backcountry Camp · Nature">
+      <div class="card-cap mono">Backcountry Camp · Nature</div>
+      <div class="card-buy">
+        <span class="mono price">$15</span>
+        <button class="buy-btn mono" data-photo-id="DSC_4784">Purchase</button>
+      </div>
+    </div>
+
+    <!-- AUTO-GALLERY-INSERT: publish_new_photos.py adds new photo cards directly above this line. Do not remove. -->
+  </div>
+</section>
+
+<svg class="contour" viewBox="0 0 1200 60" preserveAspectRatio="none" style="height:60px;">
+  <path d="M0,25 C200,50 300,0 500,25 C700,50 800,5 1000,30 C1100,45 1150,20 1200,35" />
+</svg>
+
+<footer class="footer" id="contact">
+  <div class="footer-inner">
+    <div>
+      <h2>Let's make<br>something.</h2>
+      <p class="cta">Landscape trips, portrait sessions, or event coverage around the Treasure Valley — reach out and let's talk about it.</p>
+      <div style="margin-top:22px;">
+        <a class="ig" href="https://instagram.com/Forytography" target="_blank" rel="noopener">@Forytography</a>
+      </div>
+    </div>
+    <div class="footer-meta">
+      TREASURE VALLEY, IDAHO<br>
+      LANDSCAPE — WILDLIFE — PORTRAIT — EVENT
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© <span id="year"></span> Forytography</span>
+    <span>Built with a lot of hiking boots and one camera bag</span>
+  </div>
+</footer>
+
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose" aria-label="Close">✕</button>
+  <img src="" alt="" id="lightboxImg">
+  <div class="lightbox-cap mono" id="lightboxCap"></div>
+</div>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // ---- Shop: connect Purchase buttons to the Cloudflare Worker ----
+  // Set this to your deployed Worker URL once it's live (see worker/README-DEPLOY.md)
+  const WORKER_URL = "https://forytography-shop.forytographysubdomain.workers.dev";
+
+  document.querySelectorAll('.buy-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation(); // don't trigger the lightbox
+      const photoId = btn.dataset.photoId;
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Loading…';
+      try {
+        const res = await fetch(`${WORKER_URL}/create-checkout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ photoId })
+        });
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          alert(data.error || 'Something went wrong starting checkout.');
+          btn.disabled = false;
+          btn.textContent = originalText;
+        }
+      } catch (err) {
+        alert('Could not reach the shop right now. Please try again shortly.');
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    });
+  });
+
+  // ---- Gallery filters ----
+  const buttons = document.querySelectorAll('.filters button');
+  const cards = document.querySelectorAll('.card');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const f = btn.dataset.filter;
+      cards.forEach(card => {
+        const show = f === 'all' || card.dataset.cat === f;
+        card.dataset.hidden = show ? "false" : "true";
+      });
+    });
+  });
+
+  // ---- Lightbox ----
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxCap = document.getElementById('lightboxCap');
+  const lightboxClose = document.getElementById('lightboxClose');
+
+  function openLightbox(src, alt, cap){
+    lightboxImg.src = src;
+    lightboxImg.alt = alt || '';
+    lightboxCap.textContent = cap || '';
+    lightbox.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLightbox(){
+    lightbox.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll('.lightbox-trigger').forEach(img => {
+    img.addEventListener('click', () => {
+      openLightbox(img.src, img.alt, img.dataset.cap);
+    });
+  });
+
+  lightboxClose.addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', (e) => {
+    if(e.target === lightbox){ closeLightbox(); }
+  });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape'){ closeLightbox(); }
+  });
+</script>
+
+</body>
+</html>

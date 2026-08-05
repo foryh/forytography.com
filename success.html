@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thank you — Forytography</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Newsreader:ital,wght@0,400;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EFF1EA; --paper:#F8F7F2; --ink:#1F2620; --ink-soft:#4B5449;
+    --gold:#C99A3B; --sage:#6B7A5E; --line:#C9C6BC;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; min-height:100vh; background:var(--bg); color:var(--ink);
+    font-family:'Newsreader', serif;
+    display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .card{
+    max-width:480px; width:100%; background:var(--paper);
+    border:1px solid var(--line); padding:48px 40px; text-align:center;
+  }
+  h1{
+    font-family:'Big Shoulders Display', sans-serif; text-transform:uppercase;
+    font-weight:900; font-size:40px; margin:0 0 16px; line-height:0.95;
+  }
+  .mono{ font-family:'JetBrains Mono', monospace; letter-spacing:0.08em; text-transform:uppercase; font-size:11px; }
+  p{ font-size:16px; line-height:1.6; color:var(--ink-soft); }
+  .state{ margin:32px 0; }
+  .btn{
+    display:inline-block; margin-top:8px; padding:14px 28px;
+    background:var(--ink); color:var(--paper); text-decoration:none;
+    font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:0.08em;
+    text-transform:uppercase; border:none; cursor:pointer;
+    transition:background .2s;
+  }
+  .btn:hover{ background:var(--sage); }
+  .spinner{
+    width:28px; height:28px; border:2px solid var(--line); border-top-color:var(--ink);
+    border-radius:50%; margin:0 auto; animation:spin 0.8s linear infinite;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .error{ color:#a14a3a; font-family:'JetBrains Mono', monospace; font-size:12px; }
+  a.back{ color:var(--ink-soft); font-size:13px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <span class="mono" style="color:var(--sage);">Order confirmed</span>
+    <h1>Thank you</h1>
+    <div class="state" id="state">
+      <div class="spinner"></div>
+      <p>Confirming your payment and preparing your download…</p>
+    </div>
+  </div>
+
+<script>
+  // Point this at your deployed Worker URL
+  const WORKER_URL = "https://forytography-shop.forytographysubdomain.workers.dev";
+
+  const params = new URLSearchParams(window.location.search);
+  const sessionId = params.get("session_id");
+  const stateEl = document.getElementById("state");
+
+  async function fetchDownload(){
+    if(!sessionId){
+      stateEl.innerHTML = '<p class="error">No order found. If you just paid, check your email confirmation from Stripe, or contact @Forytography on Instagram.</p>';
+      return;
+    }
+    try{
+      const res = await fetch(`${WORKER_URL}/get-download?session_id=${encodeURIComponent(sessionId)}`);
+      if(!res.ok){
+        const data = await res.json().catch(() => ({}));
+        stateEl.innerHTML = `<p class="error">${data.error || "Something went wrong verifying your payment."}</p><p>If you were charged, reach out on Instagram (@Forytography) and I'll send the file directly.</p>`;
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      stateEl.innerHTML = `
+        <p>Your full-resolution, watermark-free photo is ready.</p>
+        <a class="btn" href="${url}" download>Download Your Photo</a>
+        <p style="margin-top:24px;"><a class="back" href="index.html">← Back to the gallery</a></p>
+      `;
+    } catch(err){
+      stateEl.innerHTML = '<p class="error">Could not reach the download service. Please refresh, or contact @Forytography on Instagram.</p>';
+    }
+  }
+
+  fetchDownload();
+</script>
+</body>
+</html>

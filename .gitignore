@@ -1,0 +1,13 @@
+# Full-resolution originals — must never be public
+r2-originals/
+
+# Worker local dev/build artifacts
+worker/node_modules/
+worker/.wrangler/
+
+# macOS
+.DS_Store
+
+# Claude Code local session config
+.claude/
+CLAUDE_CODE_START_HERE.md
