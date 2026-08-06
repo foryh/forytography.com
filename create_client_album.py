@@ -47,7 +47,7 @@ def upload_photo(local_path: Path, r2_key: str):
     print(f"  Uploading {local_path.name} -> {r2_key}")
     subprocess.run(
         ["wrangler", "r2", "object", "put", f"{BUCKET_NAME}/{r2_key}",
-         "--file", str(local_path)],
+         "--file", str(local_path), "--remote"],
         check=True,
     )
 
@@ -61,7 +61,7 @@ def write_album_kv(slug: str, client_name: str, passkey_hash: str, photo_keys: l
     subprocess.run(
         ["wrangler", "kv", "key", "put",
          f"--binding={KV_NAMESPACE_BINDING}",
-         f"album:{slug}", value],
+         f"album:{slug}", value, "--remote"],
         check=True,
     )
 
