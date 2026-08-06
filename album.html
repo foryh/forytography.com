@@ -55,13 +55,28 @@
     font-family:'Big Shoulders Display', sans-serif; text-transform:uppercase;
     font-weight:900; font-size:clamp(36px,6vw,64px); margin:10px 0 0;
   }
-  .gallery-grid{
-    display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px;
-  }
+
+  /* Masonry columns — each photo keeps its own natural aspect ratio (landscape or portrait) */
+  .gallery-grid{ column-count:3; column-gap:16px; }
+  @media (max-width:900px){ .gallery-grid{ column-count:2; } }
+  @media (max-width:560px){ .gallery-grid{ column-count:1; } }
+
   .photo-card{
     position:relative; background:var(--ink); overflow:hidden;
+    margin-bottom:16px; break-inside:avoid; cursor:zoom-in;
   }
-  .photo-card img{ width:100%; height:100%; object-fit:cover; aspect-ratio:3/2; display:block; }
+  .photo-card img{
+    width:100%; height:auto; display:block;
+    transition:transform .5s cubic-bezier(.2,.7,.3,1), filter .5s;
+  }
+  .photo-card:hover img{ transform:scale(1.03); filter:brightness(1.03); }
+  .photo-card.loading{
+    aspect-ratio:3/2;
+    background:linear-gradient(90deg, #dcdcd4 25%, #eceae2 37%, #dcdcd4 63%);
+    background-size:400% 100%; animation:shimmer 1.4s ease infinite;
+  }
+  @keyframes shimmer{ 0%{background-position:100% 0;} 100%{background-position:0 0;} }
+
   .photo-overlay{
     position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
     background:rgba(10,12,9,0.4); opacity:0; transition:opacity .2s;
@@ -72,11 +87,36 @@
     padding:12px 20px; font-family:'JetBrains Mono', monospace; font-size:11px;
     letter-spacing:0.08em; text-transform:uppercase; cursor:pointer;
   }
-  .loading-tile{
-    aspect-ratio:3/2; background:linear-gradient(90deg, #dcdcd4 25%, #eceae2 37%, #dcdcd4 63%);
-    background-size:400% 100%; animation:shimmer 1.4s ease infinite;
+
+  /* ---- Lightbox ---- */
+  .lightbox{
+    position:fixed; inset:0; z-index:1000;
+    background:rgba(12,14,10,0.94);
+    display:flex; align-items:center; justify-content:center;
+    padding:5vh 5vw;
+    opacity:0; visibility:hidden;
+    transition:opacity .25s ease;
   }
-  @keyframes shimmer{ 0%{background-position:100% 0;} 100%{background-position:0 0;} }
+  .lightbox.active{ opacity:1; visibility:visible; }
+  .lightbox img{
+    max-width:90vw; max-height:88vh;
+    width:auto; height:auto;
+    object-fit:contain;
+    box-shadow:0 30px 80px rgba(0,0,0,0.5);
+    transform:scale(0.97);
+    transition:transform .25s ease;
+    cursor:zoom-out;
+  }
+  .lightbox.active img{ transform:scale(1); }
+  .lightbox-close{
+    position:absolute; top:22px; right:clamp(20px,4vw,40px);
+    width:42px; height:42px; border-radius:50%;
+    background:transparent; border:1px solid rgba(233,230,218,0.4);
+    color:#E9E6DA; font-size:20px; line-height:1; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:background .2s, border-color .2s;
+  }
+  .lightbox-close:hover{ background:rgba(233,230,218,0.12); border-color:#E9E6DA; }
 </style>
 </head>
 <body>
@@ -100,6 +140,11 @@
     <div class="gallery-grid" id="galleryGrid"></div>
   </div>
 
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose" aria-label="Close">✕</button>
+    <img src="" alt="" id="lightboxImg">
+  </div>
+
 <script>
   // Point this at your deployed Worker URL
   const WORKER_URL = "https://forytography-shop.forytographysubdomain.workers.dev";
@@ -117,9 +162,10 @@
   const galleryGrid = document.getElementById("galleryGrid");
 
   let currentKey = null;
+  const SAVED_KEY_STORAGE = "forytography_key";
 
-  async function unlock(){
-    const key = passkeyInput.value.trim();
+  async function unlock(prefilledKey){
+    const key = prefilledKey || passkeyInput.value.trim();
     if(!slug){
       showError("This link is missing an album — check the URL you were sent.");
       return;
@@ -141,17 +187,27 @@
       const data = await res.json();
       if(!res.ok || !data.ok){
         showError(data.error || "Incorrect passkey.");
+        sessionStorage.removeItem(SAVED_KEY_STORAGE);
         unlockBtn.disabled = false;
         unlockBtn.textContent = "View Gallery";
         return;
       }
       currentKey = key;
+      sessionStorage.setItem(SAVED_KEY_STORAGE, key);
       showGallery(data);
     } catch(err){
       showError("Could not reach the gallery service. Please try again.");
       unlockBtn.disabled = false;
       unlockBtn.textContent = "View Gallery";
     }
+  }
+
+  // If a key was already used this session (e.g. from the Client Work directory
+  // or a prior unlock on this album), skip the passkey prompt entirely.
+  const savedKey = sessionStorage.getItem(SAVED_KEY_STORAGE);
+  if(savedKey && slug){
+    passkeyInput.value = savedKey;
+    unlock(savedKey);
   }
 
   function showError(msg){
@@ -167,31 +223,65 @@
     galleryGrid.innerHTML = "";
     data.photos.forEach(photo => {
       const card = document.createElement("div");
-      card.className = "photo-card";
+      card.className = "photo-card loading";
 
       const img = document.createElement("img");
       img.alt = photo.file;
-      img.src = `${WORKER_URL}/album/photo?slug=${encodeURIComponent(slug)}&file=${encodeURIComponent(photo.file)}`;
-      img.setAttribute("crossorigin", "use-credentials");
+      const photoUrl = `${WORKER_URL}/album/photo?slug=${encodeURIComponent(slug)}&file=${encodeURIComponent(photo.file)}`;
 
-      // Fetch with the passkey header, then swap in as a blob (images can't send custom headers directly)
-      fetch(img.src, { headers: { "X-Album-Key": currentKey } })
+      // Images can't send custom headers directly, so fetch with the passkey header
+      // and swap the result in as a blob once it's actually loaded.
+      fetch(photoUrl, { headers: { "X-Album-Key": currentKey } })
         .then(r => r.blob())
-        .then(blob => { img.src = URL.createObjectURL(blob); });
+        .then(blob => {
+          img.src = URL.createObjectURL(blob);
+          card.classList.remove("loading");
+        });
 
       const overlay = document.createElement("div");
       overlay.className = "photo-overlay";
       const btn = document.createElement("button");
       btn.className = "download-btn mono";
       btn.textContent = "Download";
-      btn.addEventListener("click", () => downloadPhoto(photo.file));
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        downloadPhoto(photo.file);
+      });
       overlay.appendChild(btn);
+
+      card.addEventListener("click", () => {
+        if(img.src) openLightbox(img.src, photo.file);
+      });
 
       card.appendChild(img);
       card.appendChild(overlay);
       galleryGrid.appendChild(card);
     });
   }
+
+  // ---- Lightbox ----
+  const lightbox = document.getElementById("lightbox");
+  const lightboxImg = document.getElementById("lightboxImg");
+  const lightboxClose = document.getElementById("lightboxClose");
+
+  function openLightbox(src, alt){
+    lightboxImg.src = src;
+    lightboxImg.alt = alt || "";
+    lightbox.classList.add("active");
+    document.body.style.overflow = "hidden";
+  }
+  function closeLightbox(){
+    lightbox.classList.remove("active");
+    document.body.style.overflow = "";
+  }
+  lightboxClose.addEventListener("click", closeLightbox);
+  lightboxImg.addEventListener("click", closeLightbox);
+  lightbox.addEventListener("click", (e) => {
+    if(e.target === lightbox){ closeLightbox(); }
+  });
+  document.addEventListener("keydown", (e) => {
+    if(e.key === "Escape"){ closeLightbox(); }
+  });
 
   async function downloadPhoto(file){
     const url = `${WORKER_URL}/album/photo?slug=${encodeURIComponent(slug)}&file=${encodeURIComponent(file)}&download=1`;

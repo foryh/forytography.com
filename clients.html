@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client Work — Forytography</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Newsreader:ital,wght@0,400;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EFF1EA; --paper:#F8F7F2; --ink:#1F2620; --ink-soft:#4B5449;
+    --gold:#C99A3B; --sage:#6B7A5E; --line:#C9C6BC;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; min-height:100vh; background:var(--bg); color:var(--ink);
+    font-family:'Newsreader', serif;
+  }
+  .mono{ font-family:'JetBrains Mono', monospace; letter-spacing:0.08em; text-transform:uppercase; }
+
+  /* ---- Lock screen ---- */
+  .lock-wrap{
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .lock-card{
+    max-width:420px; width:100%; background:var(--paper);
+    border:1px solid var(--line); padding:48px 40px; text-align:center;
+  }
+  .lock-card h1{
+    font-family:'Big Shoulders Display', sans-serif; text-transform:uppercase;
+    font-weight:900; font-size:34px; margin:16px 0 8px; line-height:0.95;
+  }
+  .lock-card p{ color:var(--ink-soft); font-size:15px; line-height:1.6; }
+  input[type="password"]{
+    width:100%; padding:14px; margin-top:20px;
+    border:1px solid var(--line); background:#fff; color:var(--ink);
+    font-family:'JetBrains Mono', monospace; font-size:14px; letter-spacing:0.05em;
+    text-align:center;
+  }
+  .unlock-btn{
+    width:100%; margin-top:14px; padding:14px;
+    background:var(--ink); color:var(--paper); border:none;
+    font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:0.08em;
+    text-transform:uppercase; cursor:pointer; transition:background .2s;
+  }
+  .unlock-btn:hover{ background:var(--sage); }
+  .unlock-btn[disabled]{ opacity:0.6; cursor:wait; }
+  .error-msg{ color:#a14a3a; font-size:12px; margin-top:14px; font-family:'JetBrains Mono', monospace; }
+  .back-link{
+    display:inline-block; margin-top:24px; color:var(--ink-soft);
+    font-size:11px; text-decoration:none; border-bottom:1px solid var(--line);
+  }
+  .back-link:hover{ color:var(--ink); border-color:var(--ink); }
+
+  /* ---- Directory view ---- */
+  .dir-wrap{ display:none; padding:100px 24px 80px; max-width:1180px; margin:0 auto; }
+  .dir-header{ text-align:center; margin-bottom:48px; }
+  .dir-header .eyebrow{ color:var(--sage); font-size:11px; }
+  .dir-header h1{
+    font-family:'Big Shoulders Display', sans-serif; text-transform:uppercase;
+    font-weight:900; font-size:clamp(36px,6vw,64px); margin:10px 0 0;
+  }
+  .empty-msg{ text-align:center; color:var(--ink-soft); font-size:15px; margin-top:40px; }
+
+  .dir-grid{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:20px;
+  }
+  .album-card{
+    display:block; text-decoration:none; color:inherit;
+    background:var(--paper); border:1px solid var(--line);
+    transition:border-color .2s, transform .2s;
+  }
+  .album-card:hover{ border-color:var(--gold); transform:translateY(-2px); }
+  .album-cover{
+    aspect-ratio:3/2; background:var(--ink); overflow:hidden;
+    background:linear-gradient(90deg, #dcdcd4 25%, #eceae2 37%, #dcdcd4 63%);
+    background-size:400% 100%; animation:shimmer 1.4s ease infinite;
+  }
+  .album-cover img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .album-cover.loaded{ animation:none; background:var(--ink); }
+  @keyframes shimmer{ 0%{background-position:100% 0;} 100%{background-position:0 0;} }
+  .album-meta{ padding:16px 18px; }
+  .album-meta h2{
+    font-family:'Big Shoulders Display', sans-serif; text-transform:uppercase;
+    font-weight:900; font-size:22px; margin:0 0 6px; line-height:1.05;
+  }
+  .album-meta .count{ color:var(--ink-soft); font-size:11px; }
+</style>
+</head>
+<body>
+
+  <div class="lock-wrap" id="lockWrap">
+    <div class="lock-card">
+      <span class="mono" style="color:var(--sage); font-size:11px;">Client Work</span>
+      <h1>Album Directory</h1>
+      <p>Enter your master passkey to browse every client gallery.</p>
+      <input type="password" id="passkeyInput" placeholder="Passkey" autocomplete="off">
+      <button class="unlock-btn mono" id="unlockBtn">View Albums</button>
+      <p class="error-msg" id="errorMsg" style="display:none;"></p>
+      <a class="back-link mono" href="index.html">← Back to site</a>
+    </div>
+  </div>
+
+  <div class="dir-wrap" id="dirWrap">
+    <div class="dir-header">
+      <span class="mono eyebrow">Forytography · Private Delivery</span>
+      <h1>Client Work</h1>
+    </div>
+    <div class="dir-grid" id="dirGrid"></div>
+    <p class="empty-msg" id="emptyMsg" style="display:none;">No client albums yet — run create_client_album.py after your next shoot.</p>
+  </div>
+
+<script>
+  const WORKER_URL = "https://forytography-shop.forytographysubdomain.workers.dev";
+  const SAVED_KEY_STORAGE = "forytography_key";
+
+  const lockWrap = document.getElementById("lockWrap");
+  const dirWrap = document.getElementById("dirWrap");
+  const passkeyInput = document.getElementById("passkeyInput");
+  const unlockBtn = document.getElementById("unlockBtn");
+  const errorMsg = document.getElementById("errorMsg");
+  const dirGrid = document.getElementById("dirGrid");
+  const emptyMsg = document.getElementById("emptyMsg");
+
+  let currentKey = null;
+
+  async function unlock(prefilledKey){
+    const key = prefilledKey || passkeyInput.value.trim();
+    if(!key){
+      showError("Please enter your passkey.");
+      return;
+    }
+    unlockBtn.disabled = true;
+    unlockBtn.textContent = "Checking…";
+    errorMsg.style.display = "none";
+
+    try {
+      const res = await fetch(`${WORKER_URL}/albums/list`, {
+        headers: { "X-Album-Key": key }
+      });
+      const data = await res.json();
+      if(!res.ok || !data.ok){
+        showError(data.error || "Incorrect passkey.");
+        sessionStorage.removeItem(SAVED_KEY_STORAGE);
+        unlockBtn.disabled = false;
+        unlockBtn.textContent = "View Albums";
+        return;
+      }
+      currentKey = key;
+      sessionStorage.setItem(SAVED_KEY_STORAGE, key);
+      showDirectory(data.albums);
+    } catch(err){
+      showError("Could not reach the gallery service. Please try again.");
+      unlockBtn.disabled = false;
+      unlockBtn.textContent = "View Albums";
+    }
+  }
+
+  function showError(msg){
+    errorMsg.textContent = msg;
+    errorMsg.style.display = "block";
+  }
+
+  function showDirectory(albums){
+    lockWrap.style.display = "none";
+    dirWrap.style.display = "block";
+
+    dirGrid.innerHTML = "";
+    if(!albums.length){
+      emptyMsg.style.display = "block";
+      return;
+    }
+    emptyMsg.style.display = "none";
+
+    albums.forEach(album => {
+      const card = document.createElement("a");
+      card.className = "album-card";
+      card.href = `album.html?album=${encodeURIComponent(album.slug)}`;
+
+      const cover = document.createElement("div");
+      cover.className = "album-cover";
+      if(album.coverFile){
+        const img = document.createElement("img");
+        img.alt = album.clientName || album.slug;
+        const coverUrl = `${WORKER_URL}/album/photo?slug=${encodeURIComponent(album.slug)}&file=${encodeURIComponent(album.coverFile)}`;
+        fetch(coverUrl, { headers: { "X-Album-Key": currentKey } })
+          .then(r => r.blob())
+          .then(blob => {
+            img.src = URL.createObjectURL(blob);
+            cover.classList.add("loaded");
+          });
+        cover.appendChild(img);
+      }
+
+      const meta = document.createElement("div");
+      meta.className = "album-meta";
+      const h2 = document.createElement("h2");
+      h2.textContent = album.clientName || album.slug;
+      const count = document.createElement("div");
+      count.className = "count mono";
+      count.textContent = `${album.photoCount} photo${album.photoCount === 1 ? "" : "s"}`;
+      meta.appendChild(h2);
+      meta.appendChild(count);
+
+      card.appendChild(cover);
+      card.appendChild(meta);
+      dirGrid.appendChild(card);
+    });
+  }
+
+  unlockBtn.addEventListener("click", () => unlock());
+  passkeyInput.addEventListener("keydown", (e) => { if(e.key === "Enter") unlock(); });
+
+  // If a key was already used this session, skip the passkey prompt entirely.
+  const savedKey = sessionStorage.getItem(SAVED_KEY_STORAGE);
+  if(savedKey){
+    passkeyInput.value = savedKey;
+    unlock(savedKey);
+  }
+</script>
+</body>
+</html>

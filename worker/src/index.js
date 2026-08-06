@@ -8,6 +8,7 @@
  * Private client galleries (senior photo delivery, etc.):
  *   3. POST /album/access      -> checks a passkey against an album, returns the list of photos if valid
  *   4. GET  /album/photo       -> streams one photo from R2, only if the passkey (sent as a header) checks out
+ *   5. GET  /albums/list       -> lists every client album (master key only) — powers the Client Work page
  *
  * Every client album has its own passkey. Your ALBUM_MASTER_KEY secret works as a passkey
  * for EVERY album, so you always have access without needing to remember each client's key.
@@ -49,6 +50,9 @@ export default {
       if (url.pathname === "/album/photo" && request.method === "GET") {
         return await albumPhoto(request, url, env, cors);
       }
+      if (url.pathname === "/albums/list" && request.method === "GET") {
+        return await albumsList(request, env, cors);
+      }
       return new Response("Not found", { status: 404, headers: cors });
     } catch (err) {
       return new Response(JSON.stringify({ error: err.message }), {
@@ -74,12 +78,19 @@ async function hashKey(key) {
   return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
+// ---- Check whether a submitted key is your personal master key ----
+function isMasterKey(env, submittedKey) {
+  return Boolean(
+    submittedKey && env.ALBUM_MASTER_KEY && submittedKey.trim() === env.ALBUM_MASTER_KEY.trim()
+  );
+}
+
 // ---- Check a submitted passkey against an album's stored hash OR your master key ----
 async function checkAlbumAccess(env, slug, submittedKey) {
   if (!submittedKey) return { ok: false, album: null };
 
   // Master key always works, for any album
-  if (env.ALBUM_MASTER_KEY && submittedKey.trim() === env.ALBUM_MASTER_KEY.trim()) {
+  if (isMasterKey(env, submittedKey)) {
     const albumRaw = await env.ALBUM_KV.get(`album:${slug}`);
     if (!albumRaw) return { ok: false, album: null };
     return { ok: true, album: JSON.parse(albumRaw) };
@@ -161,6 +172,38 @@ async function albumPhoto(request, url, env, cors) {
       "Content-Type": "image/jpeg",
       ...(download ? { "Content-Disposition": `attachment; filename="${file}"` } : {})
     }
+  });
+}
+
+// ---- List every client album (master key only) ----
+async function albumsList(request, env, cors) {
+  const key = request.headers.get("X-Album-Key");
+  if (!isMasterKey(env, key)) {
+    return new Response(JSON.stringify({ error: "Incorrect passkey" }), {
+      status: 403, headers: { ...cors, "Content-Type": "application/json" }
+    });
+  }
+
+  const albums = [];
+  let cursor;
+  do {
+    const page = await env.ALBUM_KV.list({ prefix: "album:", cursor });
+    for (const item of page.keys) {
+      const raw = await env.ALBUM_KV.get(item.name);
+      if (!raw) continue;
+      const album = JSON.parse(raw);
+      albums.push({
+        slug: item.name.slice("album:".length),
+        clientName: album.clientName,
+        photoCount: album.photoKeys.length,
+        coverFile: album.photoKeys[0] ? album.photoKeys[0].split("/").pop() : null
+      });
+    }
+    cursor = page.list_complete ? undefined : page.cursor;
+  } while (cursor);
+
+  return new Response(JSON.stringify({ ok: true, albums }), {
+    headers: { ...cors, "Content-Type": "application/json" }
   });
 }
 
