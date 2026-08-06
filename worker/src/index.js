@@ -8,7 +8,10 @@
  * Private client galleries (senior photo delivery, etc.):
  *   3. POST /album/access      -> checks a passkey against an album, returns the list of photos if valid
  *   4. GET  /album/photo       -> streams one photo from R2, only if the passkey (sent as a header) checks out
- *   5. GET  /albums/list       -> lists every client album (master key only) — powers the Client Work page
+ *   5. POST /clients/access    -> resolves a passkey: master key -> full album directory,
+ *                                  a client's own passkey -> just their album's slug. Powers the
+ *                                  Client Work page, so entering any valid passkey there gets you
+ *                                  straight to the right gallery.
  *
  * Every client album has its own passkey. Your ALBUM_MASTER_KEY secret works as a passkey
  * for EVERY album, so you always have access without needing to remember each client's key.
@@ -50,8 +53,8 @@ export default {
       if (url.pathname === "/album/photo" && request.method === "GET") {
         return await albumPhoto(request, url, env, cors);
       }
-      if (url.pathname === "/albums/list" && request.method === "GET") {
-        return await albumsList(request, env, cors);
+      if (url.pathname === "/clients/access" && request.method === "POST") {
+        return await clientsAccess(request, env, cors);
       }
       return new Response("Not found", { status: 404, headers: cors });
     } catch (err) {
@@ -175,35 +178,57 @@ async function albumPhoto(request, url, env, cors) {
   });
 }
 
-// ---- List every client album (master key only) ----
-async function albumsList(request, env, cors) {
-  const key = request.headers.get("X-Album-Key");
-  if (!isMasterKey(env, key)) {
-    return new Response(JSON.stringify({ error: "Incorrect passkey" }), {
-      status: 403, headers: { ...cors, "Content-Type": "application/json" }
-    });
-  }
-
-  const albums = [];
+// ---- Read every album out of KV, as {slug, entry} pairs ----
+async function listAllAlbumEntries(env) {
+  const entries = [];
   let cursor;
   do {
     const page = await env.ALBUM_KV.list({ prefix: "album:", cursor });
     for (const item of page.keys) {
       const raw = await env.ALBUM_KV.get(item.name);
       if (!raw) continue;
-      const album = JSON.parse(raw);
-      albums.push({
-        slug: item.name.slice("album:".length),
-        clientName: album.clientName,
-        photoCount: album.photoKeys.length,
-        coverFile: album.photoKeys[0] ? album.photoKeys[0].split("/").pop() : null
-      });
+      entries.push({ slug: item.name.slice("album:".length), album: JSON.parse(raw) });
     }
     cursor = page.list_complete ? undefined : page.cursor;
   } while (cursor);
+  return entries;
+}
 
-  return new Response(JSON.stringify({ ok: true, albums }), {
-    headers: { ...cors, "Content-Type": "application/json" }
+// ---- Resolve a passkey typed into the Client Work page ----
+// Master key -> the full album directory. A client's own passkey -> just their slug,
+// so clicking "Client Work" and entering their passkey takes them straight to their gallery.
+async function clientsAccess(request, env, cors) {
+  const { key } = await request.json();
+  if (!key) {
+    return new Response(JSON.stringify({ error: "Missing key" }), {
+      status: 400, headers: { ...cors, "Content-Type": "application/json" }
+    });
+  }
+
+  const entries = await listAllAlbumEntries(env);
+
+  if (isMasterKey(env, key)) {
+    const albums = entries.map(({ slug, album }) => ({
+      slug,
+      clientName: album.clientName,
+      photoCount: album.photoKeys.length,
+      coverFile: album.photoKeys[0] ? album.photoKeys[0].split("/").pop() : null
+    }));
+    return new Response(JSON.stringify({ ok: true, role: "master", albums }), {
+      headers: { ...cors, "Content-Type": "application/json" }
+    });
+  }
+
+  const submittedHash = await hashKey(key);
+  const match = entries.find(({ album }) => album.passkeyHash === submittedHash);
+  if (match) {
+    return new Response(JSON.stringify({ ok: true, role: "client", slug: match.slug }), {
+      headers: { ...cors, "Content-Type": "application/json" }
+    });
+  }
+
+  return new Response(JSON.stringify({ error: "Incorrect passkey" }), {
+    status: 403, headers: { ...cors, "Content-Type": "application/json" }
   });
 }
 

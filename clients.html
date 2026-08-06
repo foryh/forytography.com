@@ -92,10 +92,10 @@
   <div class="lock-wrap" id="lockWrap">
     <div class="lock-card">
       <span class="mono" style="color:var(--sage); font-size:11px;">Client Work</span>
-      <h1>Album Directory</h1>
-      <p>Enter your master passkey to browse every client gallery.</p>
+      <h1>Client Gallery</h1>
+      <p>Enter your passkey to view your gallery.</p>
       <input type="password" id="passkeyInput" placeholder="Passkey" autocomplete="off">
-      <button class="unlock-btn mono" id="unlockBtn">View Albums</button>
+      <button class="unlock-btn mono" id="unlockBtn">View Gallery</button>
       <p class="error-msg" id="errorMsg" style="display:none;"></p>
       <a class="back-link mono" href="index.html">← Back to site</a>
     </div>
@@ -135,24 +135,33 @@
     errorMsg.style.display = "none";
 
     try {
-      const res = await fetch(`${WORKER_URL}/albums/list`, {
-        headers: { "X-Album-Key": key }
+      const res = await fetch(`${WORKER_URL}/clients/access`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key })
       });
       const data = await res.json();
       if(!res.ok || !data.ok){
         showError(data.error || "Incorrect passkey.");
         sessionStorage.removeItem(SAVED_KEY_STORAGE);
         unlockBtn.disabled = false;
-        unlockBtn.textContent = "View Albums";
+        unlockBtn.textContent = "View Gallery";
         return;
       }
       currentKey = key;
       sessionStorage.setItem(SAVED_KEY_STORAGE, key);
+
+      if(data.role === "client"){
+        // Not the master key — this passkey belongs to exactly one album, so skip
+        // the directory entirely and go straight to that client's gallery.
+        window.location.href = `album.html?album=${encodeURIComponent(data.slug)}`;
+        return;
+      }
       showDirectory(data.albums);
     } catch(err){
       showError("Could not reach the gallery service. Please try again.");
       unlockBtn.disabled = false;
-      unlockBtn.textContent = "View Albums";
+      unlockBtn.textContent = "View Gallery";
     }
   }
 
