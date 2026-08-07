@@ -19,7 +19,7 @@ Apple Photos setup (one-time):
   Create these albums in Photos.app and drop photos into whichever fits:
     "Forytography - Nature"
     "Forytography - Portraits"
-    "Forytography - Events"
+    "Forytography - Gems"
 
   To mark a photo FOR SALE with a price, add a keyword to it in Photos.app
   formatted like:  price:20     (right-click photo -> Info -> Keywords)
@@ -58,7 +58,7 @@ STAGING_DIR = SITE_DIR / ".staging"
 ALBUMS = {
     "Forytography - Nature": "nature",
     "Forytography - Portraits": "portraits",
-    "Forytography - Events": "events",
+    "Forytography - Gems": "events",
 }
 DEFAULT_PRICE = {"nature": 15, "portraits": 25, "events": 20}
 
