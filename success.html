@@ -51,7 +51,7 @@
     <h1>Thank you</h1>
     <div class="state" id="state">
       <div class="spinner"></div>
-      <p>Confirming your payment and preparing your download…</p>
+      <p id="loadingText">Confirming your payment and preparing your download…</p>
     </div>
   </div>
 
@@ -61,13 +61,10 @@
 
   const params = new URLSearchParams(window.location.search);
   const sessionId = params.get("session_id");
+  const orderType = params.get("type") || "digital";
   const stateEl = document.getElementById("state");
 
   async function fetchDownload(){
-    if(!sessionId){
-      stateEl.innerHTML = '<p class="error">No order found. If you just paid, check your email confirmation from Stripe, or contact @Forytography on Instagram.</p>';
-      return;
-    }
     try{
       const res = await fetch(`${WORKER_URL}/get-download?session_id=${encodeURIComponent(sessionId)}`);
       if(!res.ok){
@@ -87,7 +84,31 @@
     }
   }
 
-  fetchDownload();
+  async function fetchPrintFulfillment(){
+    try{
+      const res = await fetch(`${WORKER_URL}/print/fulfill?session_id=${encodeURIComponent(sessionId)}`);
+      const data = await res.json().catch(() => ({}));
+      if(!res.ok || !data.ok){
+        stateEl.innerHTML = `<p class="error">${data.error || "Something went wrong placing your print order."}</p><p>If you were charged, reach out on Instagram (@Forytography) and I'll sort it out directly.</p>`;
+        return;
+      }
+      stateEl.innerHTML = `
+        <p>Your fine art print is being prepared and will ship soon — you'll get a confirmation and tracking info by email once it's on its way.</p>
+        <p style="margin-top:24px;"><a class="back" href="index.html">← Back to the gallery</a></p>
+      `;
+    } catch(err){
+      stateEl.innerHTML = '<p class="error">Could not reach the print service. Please refresh, or contact @Forytography on Instagram.</p>';
+    }
+  }
+
+  if(!sessionId){
+    stateEl.innerHTML = '<p class="error">No order found. If you just paid, check your email confirmation from Stripe, or contact @Forytography on Instagram.</p>';
+  } else if(orderType === "print"){
+    document.getElementById("loadingText").textContent = "Confirming your payment and placing your print order…";
+    fetchPrintFulfillment();
+  } else {
+    fetchDownload();
+  }
 </script>
 </body>
 </html>

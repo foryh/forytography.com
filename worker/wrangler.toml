@@ -29,7 +29,17 @@ CONTACT_EMAIL = "foryhooste@gmail.com"
 # like "Forytography <inquiries@forytography.com>".
 FROM_EMAIL = "Forytography Inquiries <onboarding@resend.dev>"
 
+# The Worker's own public URL — separate from SITE_URL (your site's domain) because
+# Prodigi needs a URL it can fetch the print file from directly, not your site's HTML.
+SITE_WORKER_URL = "https://forytography-shop.forytographysubdomain.workers.dev"
+
+# Prodigi's sandbox environment — safe for testing, nothing gets printed/shipped/charged.
+# Once you're ready to sell real prints: change this to "https://api.prodigi.com" AND
+# replace the PRODIGI_API_KEY secret below with a Live key (not Sandbox).
+PRODIGI_BASE_URL = "https://api.sandbox.prodigi.com"
+
 # ---- Secret settings (do NOT put these here — set them with the commands below instead) ----
 # wrangler secret put STRIPE_SECRET_KEY
 # wrangler secret put ALBUM_MASTER_KEY      <- your personal "always works" passkey
 # wrangler secret put RESEND_API_KEY        <- from resend.com, powers the intake form emails
+# wrangler secret put PRODIGI_API_KEY       <- from prodigi.com, powers fine-art print fulfillment
