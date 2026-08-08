@@ -64,6 +64,7 @@ DEFAULT_PRICE = {"nature": 15, "portraits": 25, "events": 20}
 
 LOGO_BLACK = IMAGES_DIR / "calligraphy-logo-black.png"
 LOGO_WHITE = IMAGES_DIR / "calligraphy-logo-white.png"
+LOGO_GOLD = IMAGES_DIR / "calligraphy-logo-gold.png"
 
 
 # ---------------------------------------------------------------------------
@@ -117,6 +118,44 @@ def get_photo_metadata(photo_path):
 # ---------------------------------------------------------------------------
 # Step 2 — watermark + resize for the web gallery
 # ---------------------------------------------------------------------------
+def _ink_luminance(logo_path, alpha_thresh=40):
+    """Mean perceptual luminance (0-255) of a logo's opaque ink pixels."""
+    arr = np.array(Image.open(logo_path).convert("RGBA"))
+    mask = arr[..., 3] > alpha_thresh
+    rgb = arr[..., :3][mask].astype(float)
+    return float((rgb @ [0.299, 0.587, 0.114]).mean()) if rgb.size else 128.0
+
+
+_GOLD_INK_LUM = _ink_luminance(LOGO_GOLD)
+
+
+def choose_watermark_logo(photo):
+    """Pick black / white / gold ink for a given (already-resized) RGB photo.
+
+    Black/white falls back to the original luminance rule (bright photo ->
+    black ink, dark photo -> white ink). Gold is preferred when the photo
+    reads as warm-toned and reasonably saturated (golden-hour light, warm
+    landscapes) and isn't too close to the gold ink's own luminance — the
+    watermark is only 16% opacity, so gold just needs to avoid disappearing
+    into a similarly-toned photo, not achieve strong contrast.
+    """
+    small = photo.resize((60, 60))
+    mean_lum = np.array(small.convert("L")).mean()
+
+    hsv = np.array(small.convert("HSV")).astype(float)
+    hue_deg = hsv[..., 0] / 255.0 * 360.0
+    sat = hsv[..., 1].mean() / 255.0
+    theta = np.radians(hue_deg)
+    mean_hue = np.degrees(np.arctan2(np.sin(theta).mean(), np.cos(theta).mean())) % 360
+
+    is_warm_and_saturated = 15 <= mean_hue <= 55 and sat > 0.22
+    gold_contrast_ok = abs(mean_lum - _GOLD_INK_LUM) > 20
+
+    if is_warm_and_saturated and gold_contrast_ok:
+        return LOGO_GOLD
+    return LOGO_BLACK if mean_lum > 140 else LOGO_WHITE
+
+
 def make_watermarked_preview(src_path, out_path, max_dim=2000):
     photo = Image.open(src_path).convert("RGB")
     w, h = photo.size
@@ -125,9 +164,7 @@ def make_watermarked_preview(src_path, out_path, max_dim=2000):
         photo = photo.resize((int(w * scale), int(h * scale)), Image.LANCZOS)
     w, h = photo.size
 
-    small = photo.resize((60, 60))
-    mean_lum = np.array(small.convert("L")).mean()
-    logo = Image.open(LOGO_BLACK if mean_lum > 140 else LOGO_WHITE).convert("RGBA")
+    logo = Image.open(choose_watermark_logo(photo)).convert("RGBA")
 
     logo_w = int(w * 0.34)
     scale = logo_w / logo.width
@@ -158,6 +195,16 @@ def make_watermarked_preview(src_path, out_path, max_dim=2000):
 def make_clean_original(src_path, out_path):
     photo = Image.open(src_path).convert("RGB")
     photo.save(out_path, "JPEG", quality=95)
+
+
+def make_hero_image(src_path, out_path, max_dim=2400, quality=88):
+    """Full-bleed, no-watermark web copy for a hero/header banner use."""
+    photo = Image.open(src_path).convert("RGB")
+    w, h = photo.size
+    if max(w, h) > max_dim:
+        scale = max_dim / max(w, h)
+        photo = photo.resize((int(w * scale), int(h * scale)), Image.LANCZOS)
+    photo.save(out_path, "JPEG", quality=quality)
 
 
 # ---------------------------------------------------------------------------

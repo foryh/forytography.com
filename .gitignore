@@ -8,6 +8,9 @@ worker/.wrangler/
 # macOS
 .DS_Store
 
+# Python
+__pycache__/
+
 # Claude Code local session config
 .claude/
 CLAUDE_CODE_START_HERE.md
