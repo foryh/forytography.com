@@ -22,12 +22,10 @@ id = "7a92a5f216ba4adeb5cf821c910a36a6"
 SITE_URL = "https://forytography.com"
 ALLOWED_ORIGIN = "https://forytography.com"
 CONTACT_EMAIL = "foryhooste@gmail.com"
-# Sender address for intake-form emails. The default resend.dev address works
-# immediately with no setup — Resend just requires the recipient (CONTACT_EMAIL
-# above) to match the email you signed up to Resend with, until you verify a
-# domain. Once you verify forytography.com in Resend, change this to something
-# like "Forytography <inquiries@forytography.com>".
-FROM_EMAIL = "Forytography Inquiries <onboarding@resend.dev>"
+# Sender address for intake-form emails and failure alerts. forytography.com is
+# verified with Resend (the "send" subdomain in DNS is just Resend's internal
+# MX/SPF bounce-handling infra — actual sending uses the root domain below).
+FROM_EMAIL = "Forytography <inquiries@forytography.com>"
 
 # The Worker's own public URL — separate from SITE_URL (your site's domain) because
 # Prodigi needs a URL it can fetch the print file from directly, not your site's HTML.
