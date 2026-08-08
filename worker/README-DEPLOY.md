@@ -153,4 +153,39 @@ This uploads the photos privately, generates a client passkey, and prints the li
 3. Redeploy the Worker: `wrangler deploy`
 4. Add a watermarked preview + Purchase button to `index.html`'s gallery grid (copy an existing card block, update the image, caption, and `data-photo-id`) — or just run `publish_new_photos.py` if you've set up the Apple Photos automation.
 
+---
+
+## Selling fine art prints (Prodigi)
+
+Every for-sale photo also has an "Order a Print" option — a 16x24" Hahnemühle Photo Rag
+print ($79), fulfilled by [Prodigi](https://www.prodigi.com). This is currently wired to
+Prodigi's **sandbox** environment (no real orders, nothing printed or charged).
+
+**To go live:**
+1. In your Prodigi dashboard, switch to Live mode and generate a **Live** API key
+   (separate from your Sandbox key).
+2. Update the secret:
+   ```bash
+   cd worker
+   wrangler secret put PRODIGI_API_KEY
+   ```
+   (paste the Live key — it overwrites the sandbox one)
+3. In `wrangler.toml`, change:
+   ```toml
+   PRODIGI_BASE_URL = "https://api.prodigi.com"
+   ```
+4. Redeploy: `wrangler deploy`
+
+**Changing the print size, paper, or price:** edit `PRINT_SKU` and `PRINT_PRICE_CENTS`
+near the top of `worker/src/index.js`. To offer more than one size/style, you'd extend
+the print button in `index.html` to pass along a chosen SKU instead of always using
+the single `PRINT_SKU` constant.
+
+**If a print order fails after payment** (Prodigi API hiccup, missing shipping
+address, etc.), you'll get an email at your `CONTACT_EMAIL` with the Stripe session
+ID — check the Stripe dashboard for that session and either place the Prodigi order
+manually or refund the customer.
+
+---
+
 Happy to walk through any of these steps in more detail, or help troubleshoot if something doesn't work as expected on the first deploy — this kind of setup often needs one or two small adjustments the first time through.

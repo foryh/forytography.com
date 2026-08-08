@@ -444,9 +444,20 @@ async function printFulfill(url, env, cors) {
     });
   }
 
-  const address = session.shipping_details?.address;
+  // Stripe sometimes attaches the collected address to shipping_details, other
+  // times only to customer_details (e.g. when "billing same as shipping" is
+  // checked) — fall back to whichever one is actually populated.
+  const address = session.shipping_details?.address || session.customer_details?.address;
   const recipientName = session.shipping_details?.name || session.customer_details?.name;
+
   if (!address || !recipientName) {
+    console.error("Missing shipping address:", JSON.stringify({ shipping: session.shipping_details, customer: session.customer_details }));
+    await notifyPhotographerOfError(env,
+      `Print order missing shipping address for ${photo.name}`,
+      `Stripe session ${sessionId} was paid but no shipping address was found.\n\n` +
+      `Customer: ${session.customer_details?.email || "unknown"}\n\n` +
+      `You'll need to check the Stripe dashboard for this session and place the Prodigi order manually, or refund the customer.`
+    );
     return new Response(JSON.stringify({ error: "Missing shipping address" }), {
       status: 400, headers: { ...cors, "Content-Type": "application/json" }
     });
