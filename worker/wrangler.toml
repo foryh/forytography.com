@@ -21,7 +21,15 @@ id = "7a92a5f216ba4adeb5cf821c910a36a6"
 [vars]
 SITE_URL = "https://forytography.com"
 ALLOWED_ORIGIN = "https://forytography.com"
+CONTACT_EMAIL = "foryhooste@gmail.com"
+# Sender address for intake-form emails. The default resend.dev address works
+# immediately with no setup — Resend just requires the recipient (CONTACT_EMAIL
+# above) to match the email you signed up to Resend with, until you verify a
+# domain. Once you verify forytography.com in Resend, change this to something
+# like "Forytography <inquiries@forytography.com>".
+FROM_EMAIL = "Forytography Inquiries <onboarding@resend.dev>"
 
 # ---- Secret settings (do NOT put these here — set them with the commands below instead) ----
 # wrangler secret put STRIPE_SECRET_KEY
 # wrangler secret put ALBUM_MASTER_KEY      <- your personal "always works" passkey
+# wrangler secret put RESEND_API_KEY        <- from resend.com, powers the intake form emails

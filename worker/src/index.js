@@ -13,6 +13,9 @@
  *                                  Client Work page, so entering any valid passkey there gets you
  *                                  straight to the right gallery.
  *
+ * Client intake:
+ *   6. POST /contact/inquiry   -> emails you (via Resend) when someone submits the intake form
+ *
  * Every client album has its own passkey. Your ALBUM_MASTER_KEY secret works as a passkey
  * for EVERY album, so you always have access without needing to remember each client's key.
  */
@@ -55,6 +58,9 @@ export default {
       }
       if (url.pathname === "/clients/access" && request.method === "POST") {
         return await clientsAccess(request, env, cors);
+      }
+      if (url.pathname === "/contact/inquiry" && request.method === "POST") {
+        return await contactInquiry(request, env, cors);
       }
       return new Response("Not found", { status: 404, headers: cors });
     } catch (err) {
@@ -333,5 +339,85 @@ async function getDownload(url, env, cors) {
       "Content-Type": "image/jpeg",
       "Content-Disposition": `attachment; filename="${photoId}-forytography.jpg"`
     }
+  });
+}
+
+// ---- Email the photographer when someone submits the client intake form ----
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
+async function contactInquiry(request, env, cors) {
+  const body = await request.json();
+
+  // Honeypot: real visitors never see or fill this field. If it's filled,
+  // silently pretend success so bots don't learn to look elsewhere.
+  if (body.website) {
+    return new Response(JSON.stringify({ ok: true }), {
+      headers: { ...cors, "Content-Type": "application/json" }
+    });
+  }
+
+  const name = (body.name || "").trim();
+  const email = (body.email || "").trim();
+  const vision = (body.vision || "").trim();
+
+  if (!name || !email || !vision || !email.includes("@")) {
+    return new Response(JSON.stringify({ error: "Please fill in your name, a valid email, and a bit about what you're looking for." }), {
+      status: 400, headers: { ...cors, "Content-Type": "application/json" }
+    });
+  }
+
+  const fields = [
+    ["Name", name],
+    ["Email", email],
+    ["Phone", body.phone],
+    ["Session type", body.sessionType],
+    ["Preferred date(s)", body.dates],
+    ["Location", body.location],
+    ["Group size", body.groupSize],
+    ["Budget range", body.budget],
+    ["How they heard about you", body.referral],
+    ["Instagram / reference link", body.reference],
+  ].filter(([, value]) => value && String(value).trim());
+
+  const rowsHtml = fields.map(([label, value]) =>
+    `<tr><td style="padding:4px 12px 4px 0;color:#6B7A5E;font-weight:600;white-space:nowrap;vertical-align:top;">${escapeHtml(label)}</td><td style="padding:4px 0;">${escapeHtml(value)}</td></tr>`
+  ).join("");
+
+  const html = `
+    <div style="font-family:Georgia,serif;color:#1F2620;max-width:560px;">
+      <h2 style="font-family:Arial,sans-serif;">New inquiry from ${escapeHtml(name)}</h2>
+      <table style="border-collapse:collapse;font-size:14px;">${rowsHtml}</table>
+      <p style="margin-top:20px;font-size:14px;"><strong>What they're looking for:</strong><br>${escapeHtml(vision).replace(/\n/g, "<br>")}</p>
+    </div>
+  `;
+
+  const resendRes = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      from: env.FROM_EMAIL || "Forytography Inquiries <onboarding@resend.dev>",
+      to: [env.CONTACT_EMAIL],
+      reply_to: email,
+      subject: `New inquiry from ${name}`,
+      html
+    })
+  });
+
+  if (!resendRes.ok) {
+    console.error("Resend error:", await resendRes.text());
+    return new Response(JSON.stringify({ error: "Could not send your inquiry right now. Please try again shortly." }), {
+      status: 502, headers: { ...cors, "Content-Type": "application/json" }
+    });
+  }
+
+  return new Response(JSON.stringify({ ok: true }), {
+    headers: { ...cors, "Content-Type": "application/json" }
   });
 }
