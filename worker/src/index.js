@@ -39,11 +39,6 @@ const PHOTOS = {
   "DSC_4297": { name: "Brass Lineup", priceCents: 2000, category: "events", caption: "Brass Lineup · Event", r2Key: "originals/DSC_4297.jpg" },
   "DSC_2603": { name: "War Paint", priceCents: 2000, category: "events", caption: "War Paint · Event", r2Key: "originals/DSC_2603.jpg" },
   "DSC_4493": { name: "Field Formation", priceCents: 2000, category: "events", caption: "Field Formation · Event", r2Key: "originals/DSC_4493.jpg" },
-  "DSC_5516": { name: "Miata in the Fog", priceCents: 2000, category: "portraits", caption: "Miata in the Fog · Portrait", r2Key: "originals/DSC_5516.jpg" },
-  "DSC_5074": { name: "Framed in Branches", priceCents: 2000, category: "portraits", caption: "Framed in Branches · Portrait", r2Key: "originals/DSC_5074.jpg" },
-  "DSC_5032": { name: "Golden Hour Portrait", priceCents: 2000, category: "portraits", caption: "Golden Hour Portrait · Portrait", r2Key: "originals/DSC_5032.jpg" },
-  "DSC_5533": { name: "Hay Bale Portrait", priceCents: 2000, category: "portraits", caption: "Hay Bale Portrait · Portrait", r2Key: "originals/DSC_5533.jpg" },
-  "DSC_5538": { name: "Portrait on the Farm", priceCents: 2000, category: "portraits", caption: "Portrait on the Farm · Portrait", r2Key: "originals/DSC_5538.jpg" },
   "DSC_4677": { name: "Crossing the Burn", priceCents: 2000, category: "nature", caption: "Crossing the Burn · Nature", r2Key: "originals/DSC_4677.jpg" },
   "DSC_1325": { name: "Trail Marker in the Fog", priceCents: 2000, category: "nature", caption: "Trail Marker in the Fog · Nature", r2Key: "originals/DSC_1325.jpg" },
   "DSC_4721": { name: "Behind the Falls", priceCents: 2000, category: "nature", caption: "Behind the Falls · Nature", r2Key: "originals/DSC_4721.jpg" },
@@ -77,7 +72,6 @@ const PHOTOS = {
   "DSC_4872": { name: "Ridgeline Layers",              priceCents: 2000, category: "nature",    caption: "Ridgeline Layers · Nature", r2Key: "originals/DSC_4872.jpg" },
   "DSC_4784": { name: "Backcountry Camp",              priceCents: 2000, category: "nature",    caption: "Backcountry Camp · Nature", r2Key: "originals/DSC_4784.jpg" },
   "DSC_4983": { name: "Evening Light",                 priceCents: 2000, category: "nature",    caption: "Evening Light · Nature",    r2Key: "originals/DSC_4983.jpg" },
-  "DSC_5497": { name: "Foggy Morning Portrait",        priceCents: 2000, category: "portraits", caption: "Foggy Morning · Portrait",  r2Key: "originals/DSC_5497.jpg" },
   "DSC_2218": { name: "Boise Gems - Drummer",          priceCents: 2000, category: "events",    caption: "Boise Gems · Event",        r2Key: "originals/DSC_2218.jpg" },
   "DSC_2266": { name: "Boise Gems - Horn Player",       priceCents: 2000, category: "events",    caption: "Boise Gems · Event",        r2Key: "originals/DSC_2266.jpg" }
 };
