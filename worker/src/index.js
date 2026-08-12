@@ -28,14 +28,56 @@
  */
 
 const PHOTOS = {
-  "DSC_0707": { name: "Sawtooth Range at Dusk",        priceCents: 1500, category: "nature",    caption: "Sawtooth Range · Nature",   r2Key: "originals/DSC_0707.jpg" },
-  "DSC_0720": { name: "Sawtooth Valley Sunset",        priceCents: 1500, category: "nature",    caption: "Sawtooth Valley · Nature",  r2Key: "originals/DSC_0720.jpg" },
-  "DSC_9351": { name: "High Desert Ridgeline",         priceCents: 1500, category: "nature",    caption: "High Desert Ridgeline · Nature", r2Key: "originals/DSC_9351.jpg" },
-  "DSC_9546": { name: "Marsh Life",                    priceCents: 1500, category: "nature",    caption: "Marsh Life · Wildlife",     r2Key: "originals/DSC_9546.jpg" },
-  "DSC_4872": { name: "Ridgeline Layers",              priceCents: 1500, category: "nature",    caption: "Ridgeline Layers · Nature", r2Key: "originals/DSC_4872.jpg" },
-  "DSC_4784": { name: "Backcountry Camp",              priceCents: 1500, category: "nature",    caption: "Backcountry Camp · Nature", r2Key: "originals/DSC_4784.jpg" },
-  "DSC_4983": { name: "Evening Light",                 priceCents: 1500, category: "nature",    caption: "Evening Light · Nature",    r2Key: "originals/DSC_4983.jpg" },
-  "DSC_5497": { name: "Foggy Morning Portrait",        priceCents: 2500, category: "portraits", caption: "Foggy Morning · Portrait",  r2Key: "originals/DSC_5497.jpg" },
+  "DSC_1975": { name: "Drumline Energy", priceCents: 2000, category: "events", caption: "Drumline Energy · Event", r2Key: "originals/DSC_1975.jpg" },
+  "DSC_1993": { name: "Brass in Motion", priceCents: 2000, category: "events", caption: "Brass in Motion · Event", r2Key: "originals/DSC_1993.jpg" },
+  "DSC_2809": { name: "Focused on the Beat", priceCents: 2000, category: "events", caption: "Focused on the Beat · Event", r2Key: "originals/DSC_2809.jpg" },
+  "DSC_4179": { name: "Marching in Formation", priceCents: 2000, category: "events", caption: "Marching in Formation · Event", r2Key: "originals/DSC_4179.jpg" },
+  "DSC_4180": { name: "Plumes in a Row", priceCents: 2000, category: "events", caption: "Plumes in a Row · Event", r2Key: "originals/DSC_4180.jpg" },
+  "DSC_1491": { name: "Bass Drum Line", priceCents: 2000, category: "events", caption: "Bass Drum Line · Event", r2Key: "originals/DSC_1491.jpg" },
+  "DSC_2221": { name: "Silhouette at Sunset", priceCents: 2000, category: "events", caption: "Silhouette at Sunset · Event", r2Key: "originals/DSC_2221.jpg" },
+  "DSC_5294": { name: "Halftime Show", priceCents: 2000, category: "events", caption: "Halftime Show · Event", r2Key: "originals/DSC_5294.jpg" },
+  "DSC_4297": { name: "Brass Lineup", priceCents: 2000, category: "events", caption: "Brass Lineup · Event", r2Key: "originals/DSC_4297.jpg" },
+  "DSC_2603": { name: "War Paint", priceCents: 2000, category: "events", caption: "War Paint · Event", r2Key: "originals/DSC_2603.jpg" },
+  "DSC_4493": { name: "Field Formation", priceCents: 2000, category: "events", caption: "Field Formation · Event", r2Key: "originals/DSC_4493.jpg" },
+  "DSC_5516": { name: "Miata in the Fog", priceCents: 2000, category: "portraits", caption: "Miata in the Fog · Portrait", r2Key: "originals/DSC_5516.jpg" },
+  "DSC_5074": { name: "Framed in Branches", priceCents: 2000, category: "portraits", caption: "Framed in Branches · Portrait", r2Key: "originals/DSC_5074.jpg" },
+  "DSC_5032": { name: "Golden Hour Portrait", priceCents: 2000, category: "portraits", caption: "Golden Hour Portrait · Portrait", r2Key: "originals/DSC_5032.jpg" },
+  "DSC_5533": { name: "Hay Bale Portrait", priceCents: 2000, category: "portraits", caption: "Hay Bale Portrait · Portrait", r2Key: "originals/DSC_5533.jpg" },
+  "DSC_5538": { name: "Portrait on the Farm", priceCents: 2000, category: "portraits", caption: "Portrait on the Farm · Portrait", r2Key: "originals/DSC_5538.jpg" },
+  "DSC_4677": { name: "Crossing the Burn", priceCents: 2000, category: "nature", caption: "Crossing the Burn · Nature", r2Key: "originals/DSC_4677.jpg" },
+  "DSC_1325": { name: "Trail Marker in the Fog", priceCents: 2000, category: "nature", caption: "Trail Marker in the Fog · Nature", r2Key: "originals/DSC_1325.jpg" },
+  "DSC_4721": { name: "Behind the Falls", priceCents: 2000, category: "nature", caption: "Behind the Falls · Nature", r2Key: "originals/DSC_4721.jpg" },
+  "DSC_9847": { name: "View from the Ridge", priceCents: 2000, category: "nature", caption: "View from the Ridge · Nature", r2Key: "originals/DSC_9847.jpg" },
+  "DSC_1344": { name: "Peaks Above the Clouds", priceCents: 2000, category: "nature", caption: "Peaks Above the Clouds · Nature", r2Key: "originals/DSC_1344.jpg" },
+  "DSC_4666": { name: "Burned Forest Bridge", priceCents: 2000, category: "nature", caption: "Burned Forest Bridge · Nature", r2Key: "originals/DSC_4666.jpg" },
+  "DSC_4798": { name: "Night Sky Over the Ridge", priceCents: 2000, category: "nature", caption: "Night Sky Over the Ridge · Nature", r2Key: "originals/DSC_4798.jpg" },
+  "DSC_9709": { name: "Cliffside Forest", priceCents: 2000, category: "nature", caption: "Cliffside Forest · Nature", r2Key: "originals/DSC_9709.jpg" },
+  "DSC_2104": { name: "Snowy Mountain Range", priceCents: 2000, category: "nature", caption: "Snowy Mountain Range · Nature", r2Key: "originals/DSC_2104.jpg" },
+  "DSC_9436": { name: "Mountain Lake Inlet", priceCents: 2000, category: "nature", caption: "Mountain Lake Inlet · Nature", r2Key: "originals/DSC_9436.jpg" },
+  "DSC_4834": { name: "Blooms on the Summit", priceCents: 2000, category: "nature", caption: "Blooms on the Summit · Nature", r2Key: "originals/DSC_4834.jpg" },
+  "DSC_4789": { name: "Mount Borah Trailhead", priceCents: 2000, category: "nature", caption: "Mount Borah Trailhead · Nature", r2Key: "originals/DSC_4789.jpg" },
+  "DSC_9800": { name: "Driftwood on the Riverbank", priceCents: 2000, category: "nature", caption: "Driftwood on the Riverbank · Nature", r2Key: "originals/DSC_9800.jpg" },
+  "DSC_4731": { name: "Chukar on the Ridge", priceCents: 2000, category: "nature", caption: "Chukar on the Ridge · Nature", r2Key: "originals/DSC_4731.jpg" },
+  "DSC_1089": { name: "Cloud Inversion at Dusk", priceCents: 2000, category: "nature", caption: "Cloud Inversion at Dusk · Nature", r2Key: "originals/DSC_1089.jpg" },
+  "DSC_4842": { name: "Trail to the Summit", priceCents: 2000, category: "nature", caption: "Trail to the Summit · Nature", r2Key: "originals/DSC_4842.jpg" },
+  "DSC_2129": { name: "Bogus Basin Summit", priceCents: 2000, category: "nature", caption: "Bogus Basin Summit · Nature", r2Key: "originals/DSC_2129.jpg" },
+  "DSC_4709": { name: "Katydid on the Trail", priceCents: 2000, category: "nature", caption: "Katydid on the Trail · Nature", r2Key: "originals/DSC_4709.jpg" },
+  "DSC_9527": { name: "Backcountry Cabin", priceCents: 2000, category: "nature", caption: "Backcountry Cabin · Nature", r2Key: "originals/DSC_9527.jpg" },
+  "DSC_1063": { name: "Ridge Above the Clouds", priceCents: 2000, category: "nature", caption: "Ridge Above the Clouds · Nature", r2Key: "originals/DSC_1063.jpg" },
+  "DSC_4830": { name: "Alpine Wildflowers", priceCents: 2000, category: "nature", caption: "Alpine Wildflowers · Nature", r2Key: "originals/DSC_4830.jpg" },
+  "DSC_5261": { name: "Table Rock Under the Stars", priceCents: 2000, category: "nature", caption: "Table Rock Under the Stars · Nature", r2Key: "originals/DSC_5261.jpg" },
+  "DSC_9501": { name: "Forest Stream", priceCents: 2000, category: "nature", caption: "Forest Stream · Nature", r2Key: "originals/DSC_9501.jpg" },
+  "DSC_9628": { name: "Fireweed in Bloom", priceCents: 2000, category: "nature", caption: "Fireweed in Bloom · Nature", r2Key: "originals/DSC_9628.jpg" },
+  "DSC_9517": { name: "Squirrel with a Pinecone", priceCents: 2000, category: "nature", caption: "Squirrel with a Pinecone · Nature", r2Key: "originals/DSC_9517.jpg" },
+  "DSC_9794": { name: "Autumn on the Ridge", priceCents: 2000, category: "nature", caption: "Autumn on the Ridge · Nature", r2Key: "originals/DSC_9794.jpg" },
+  "DSC_0707": { name: "Sawtooth Range at Dusk",        priceCents: 2000, category: "nature",    caption: "Sawtooth Range · Nature",   r2Key: "originals/DSC_0707.jpg" },
+  "DSC_0720": { name: "Sawtooth Valley Sunset",        priceCents: 2000, category: "nature",    caption: "Sawtooth Valley · Nature",  r2Key: "originals/DSC_0720.jpg" },
+  "DSC_9351": { name: "High Desert Ridgeline",         priceCents: 2000, category: "nature",    caption: "High Desert Ridgeline · Nature", r2Key: "originals/DSC_9351.jpg" },
+  "DSC_9546": { name: "Marsh Life",                    priceCents: 2000, category: "nature",    caption: "Marsh Life · Wildlife",     r2Key: "originals/DSC_9546.jpg" },
+  "DSC_4872": { name: "Ridgeline Layers",              priceCents: 2000, category: "nature",    caption: "Ridgeline Layers · Nature", r2Key: "originals/DSC_4872.jpg" },
+  "DSC_4784": { name: "Backcountry Camp",              priceCents: 2000, category: "nature",    caption: "Backcountry Camp · Nature", r2Key: "originals/DSC_4784.jpg" },
+  "DSC_4983": { name: "Evening Light",                 priceCents: 2000, category: "nature",    caption: "Evening Light · Nature",    r2Key: "originals/DSC_4983.jpg" },
+  "DSC_5497": { name: "Foggy Morning Portrait",        priceCents: 2000, category: "portraits", caption: "Foggy Morning · Portrait",  r2Key: "originals/DSC_5497.jpg" },
   "DSC_2218": { name: "Boise Gems - Drummer",          priceCents: 2000, category: "events",    caption: "Boise Gems · Event",        r2Key: "originals/DSC_2218.jpg" },
   "DSC_2266": { name: "Boise Gems - Horn Player",       priceCents: 2000, category: "events",    caption: "Boise Gems · Event",        r2Key: "originals/DSC_2266.jpg" }
 };
@@ -44,9 +86,9 @@ const PHOTOS = {
 // GLOBAL-HPR-16X24 is Hahnemühle Photo Rag, 16x24" — a 2:3 ratio that exactly
 // matches a DSLR's native 3:2 aspect, so the full photo prints edge-to-edge
 // with no cropping or padding. Prodigi's cost is ~$33 (print + US shipping);
-// $79 leaves a healthy margin after that and Stripe's fee.
+// $80 leaves a healthy margin after that and Stripe's fee.
 const PRINT_SKU = "GLOBAL-HPR-16X24";
-const PRINT_PRICE_CENTS = 7900;
+const PRINT_PRICE_CENTS = 8000;
 const PRINT_ASSET_TOKEN_TTL_SECONDS = 60 * 60 * 48; // 48 hours — plenty for Prodigi to fetch + retry
 
 export default {

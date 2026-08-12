@@ -21,10 +21,11 @@ Apple Photos setup (one-time):
     "Forytography - Portraits"
     "Forytography - Boise Gems"
 
-  To mark a photo FOR SALE with a price, add a keyword to it in Photos.app
-  formatted like:  price:20     (right-click photo -> Info -> Keywords)
-  Photos without a "price:" keyword are still published to the gallery,
-  just without a Purchase button (e.g. your About/self-portrait shots).
+  Every photo is for sale by default, at DEFAULT_PRICE for its category
+  (currently $20 across the board). To override the price for one photo,
+  add a keyword formatted like:  price:35   (right-click photo -> Info ->
+  Keywords). To publish a photo WITHOUT a Purchase option (e.g. a personal
+  shot like your About/self-portrait photo), add the keyword  price:0
 
   Optional: add a keyword like caption:Sawtooth Range at Dusk to control
   the text shown under the photo. Without it, the script uses the photo's
@@ -54,13 +55,18 @@ WORKER_FILE = SITE_DIR / "worker" / "src" / "index.js"
 INDEX_HTML = SITE_DIR / "index.html"
 STATE_FILE = SITE_DIR / ".publish_state.json"
 STAGING_DIR = SITE_DIR / ".staging"
+# Optional {"DSC_1234": "Alpine Lake at Dawn", ...} — takes priority over any
+# caption: keyword or Photos.app title. Handy for naming a whole batch at once
+# without setting a keyword on every photo individually.
+NAME_OVERRIDES_FILE = SITE_DIR / ".publish_name_overrides.json"
 
 ALBUMS = {
     "Forytography - Nature": "nature",
     "Forytography - Portraits": "portraits",
     "Forytography - Boise Gems": "events",
 }
-DEFAULT_PRICE = {"nature": 15, "portraits": 25, "events": 20}
+DEFAULT_PRICE = {"nature": 20, "portraits": 20, "events": 20}
+CATEGORY_LABEL = {"nature": "Nature", "portraits": "Portrait", "events": "Event"}
 
 LOGO_BLACK = IMAGES_DIR / "calligraphy-logo-black.png"
 LOGO_WHITE = IMAGES_DIR / "calligraphy-logo-white.png"
@@ -81,13 +87,23 @@ def export_from_photos():
             [
                 "osxphotos", "export", str(dest),
                 "--album", album,
-                "--update",                # only export new/changed photos
-                "--keyword", "{keyword}",  # pulls keywords for price/caption parsing
+                "--update",                          # only export new/changed photos
+                "--keyword", "{keyword}",             # pulls keywords for price/caption parsing
+                "--convert-to-jpeg", "--jpeg-quality", "0.95",  # RAW-only photos have no .jpg
+                "--skip-original-if-edited",          # if edited in Photos, use only the edit
+                "--skip-raw",                          # skip the RAW half of a RAW+JPEG pair
             ],
             check=True,
         )
         for f in dest.glob("*"):
             if f.suffix.lower() in (".jpg", ".jpeg", ".png", ".heic"):
+                # osxphotos names an edited photo's export "<id>_edited.jpeg" — strip
+                # that suffix so the photo_id matches the original filename elsewhere
+                # (images/<id>.jpg, the Worker's PHOTOS table, etc).
+                if f.stem.endswith("_edited"):
+                    clean = f.with_stem(f.stem[: -len("_edited")])
+                    f.rename(clean)
+                    f = clean
                 exported.append((f, category))
     return exported
 
@@ -211,17 +227,14 @@ def make_hero_image(src_path, out_path, max_dim=2400, quality=88):
 # Step 3 — insert a gallery card into index.html
 # ---------------------------------------------------------------------------
 def build_card_html(photo_id, category, caption, price):
-    buy_block = ""
-    if price is not None:
-        buy_block = f"""
-      <div class="card-buy">
-        <span class="mono price">${price}</span>
-        <button class="buy-btn mono" data-photo-id="{photo_id}">Purchase</button>
-      </div>"""
+    # Purchasing happens on the photo.html product page, reached via the
+    # lightbox's "Buy This Photo" button — that button only appears when the
+    # triggering <img> has a data-photo-id, so only add it for for-sale photos.
+    photo_id_attr = f' data-photo-id="{photo_id}"' if price is not None else ""
     return f"""
     <div class="card" data-cat="{category}">
-      <img src="images/{photo_id}.jpg" alt="{caption}" class="lightbox-trigger" data-cap="{caption}">
-      <div class="card-cap mono">{caption}</div>{buy_block}
+      <img src="images/{photo_id}.jpg" alt="{caption}"{photo_id_attr} class="lightbox-trigger" data-cap="{caption}">
+      <div class="card-cap mono">{caption}</div>
     </div>
 """
 
@@ -238,9 +251,12 @@ def insert_card_into_html(card_html):
 # ---------------------------------------------------------------------------
 # Step 4 — register for-sale photos with the Worker's price list
 # ---------------------------------------------------------------------------
-def add_to_worker_pricelist(photo_id, caption, price):
+def add_to_worker_pricelist(photo_id, category, name, caption, price):
     js = WORKER_FILE.read_text()
-    entry = f'  "{photo_id}": {{ name: "{caption}", priceCents: {price * 100}, r2Key: "originals/{photo_id}.jpg" }},\n'
+    entry = (
+        f'  "{photo_id}": {{ name: "{name}", priceCents: {price * 100}, '
+        f'category: "{category}", caption: "{caption}", r2Key: "originals/{photo_id}.jpg" }},\n'
+    )
     marker = "const PHOTOS = {\n"
     if marker not in js:
         raise RuntimeError("Could not find PHOTOS table in worker/src/index.js")
@@ -287,6 +303,9 @@ def save_state(state):
 def main():
     state = load_state()
     published_ids = set(state["published"])
+    name_overrides = (
+        json.loads(NAME_OVERRIDES_FILE.read_text()) if NAME_OVERRIDES_FILE.exists() else {}
+    )
 
     exported = export_from_photos()
     new_photo_ids = []
@@ -297,9 +316,15 @@ def main():
         if photo_id in published_ids:
             continue
 
-        price, caption = get_photo_metadata(src_path)
-        caption = caption or photo_id
-        price = price if price is not None else None
+        price, name = get_photo_metadata(src_path)
+        name = name_overrides.get(photo_id) or name or photo_id
+        # No explicit price: keyword -> for sale at the category default.
+        # An explicit price:0 keyword opts a photo OUT of being for sale.
+        if price is None:
+            price = DEFAULT_PRICE.get(category)
+        elif price == 0:
+            price = None
+        caption = f"{name} · {CATEGORY_LABEL.get(category, category.title())}"
 
         preview_out = IMAGES_DIR / f"{photo_id}.jpg"
         make_watermarked_preview(src_path, preview_out)
@@ -307,7 +332,7 @@ def main():
         if price is not None:
             clean_out = R2_ORIGINALS_DIR / f"{photo_id}.jpg"
             make_clean_original(src_path, clean_out)
-            add_to_worker_pricelist(photo_id, caption, price)
+            add_to_worker_pricelist(photo_id, category, name, caption, price)
             new_sale_ids.append(photo_id)
 
         card_html = build_card_html(photo_id, category, caption, price)

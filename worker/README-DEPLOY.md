@@ -158,7 +158,7 @@ This uploads the photos privately, generates a client passkey, and prints the li
 ## Selling fine art prints (Prodigi)
 
 Every for-sale photo also has an "Order a Print" option — a 16x24" Hahnemühle Photo Rag
-print ($79), fulfilled by [Prodigi](https://www.prodigi.com). This is currently wired to
+print ($80), fulfilled by [Prodigi](https://www.prodigi.com). This is currently wired to
 Prodigi's **sandbox** environment (no real orders, nothing printed or charged).
 
 **To go live:**
