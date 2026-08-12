@@ -182,33 +182,6 @@
   .card:hover .card-cap{ opacity:1; transform:translateY(0); }
   .card[data-hidden="true"]{ display:none; }
 
-  .card-buy{
-    position:absolute; top:0; right:0;
-    padding:10px 12px;
-    display:flex; flex-direction:column; align-items:flex-end; gap:8px;
-    background:linear-gradient(180deg, rgba(10,12,9,0.7) 0%, rgba(10,12,9,0) 100%);
-    opacity:0; transform:translateY(-6px);
-    transition:opacity .3s, transform .3s;
-  }
-  .card:hover .card-buy{ opacity:1; transform:translateY(0); }
-  .buy-row{ display:flex; align-items:center; gap:10px; }
-  .card-buy .price{
-    color:#F3F1E8; font-size:12px; letter-spacing:0.06em;
-  }
-  .buy-btn{
-    font-size:10.5px; letter-spacing:0.08em;
-    background:var(--gold); color:#241C0D; border:none;
-    padding:8px 12px; cursor:pointer;
-    transition:background .2s, transform .15s;
-  }
-  .buy-btn:hover{ background:#DCAE52; }
-  .buy-btn:active{ transform:scale(0.96); }
-  .buy-btn[disabled]{ opacity:0.6; cursor:wait; }
-  .print-btn{
-    background:transparent; color:#F3F1E8; border:1px solid rgba(243,241,232,0.5);
-  }
-  .print-btn:hover{ background:rgba(243,241,232,0.12); border-color:#F3F1E8; }
-
   @media (max-width:900px){ .grid{ column-count:2; } }
   @media (max-width:560px){ .grid{ column-count:1; } }
 
@@ -237,6 +210,15 @@
     color:#E9E6DA; font-family:'JetBrains Mono',monospace;
     font-size:11px; letter-spacing:0.1em;
   }
+  .lightbox-buy{
+    position:absolute; left:50%; bottom:60px; transform:translateX(-50%);
+    display:none;
+    background:var(--gold); color:#241C0D; text-decoration:none;
+    padding:13px 28px; font-family:'JetBrains Mono', monospace; font-size:12px;
+    letter-spacing:0.08em; text-transform:uppercase;
+    transition:background .2s;
+  }
+  .lightbox-buy:hover{ background:#DCAE52; }
   .lightbox-close{
     position:absolute; top:22px; right:clamp(20px,4vw,40px);
     width:42px; height:42px; border-radius:50%;
@@ -348,157 +330,62 @@
   <div class="grid" id="grid">
 
     <div class="card" data-cat="nature">
-      <img src="images/DSC_0707.jpg" alt="Sawtooth lake at dusk" class="lightbox-trigger" data-cap="Sawtooth Range · Nature">
+      <img src="images/DSC_0707.jpg" alt="Sawtooth lake at dusk" data-photo-id="DSC_0707" class="lightbox-trigger" data-cap="Sawtooth Range · Nature">
       <div class="card-cap mono">Sawtooth Range · Nature</div>
-      <div class="card-buy">
-        <div class="buy-row">
-          <span class="mono price">$15</span>
-          <button class="buy-btn mono" data-photo-id="DSC_0707" data-order-type="digital">Digital</button>
-        </div>
-        <div class="buy-row">
-          <span class="mono price">$79</span>
-          <button class="buy-btn mono print-btn" data-photo-id="DSC_0707" data-order-type="print">Print</button>
-        </div>
       </div>
     </div>
 
     <div class="card" data-cat="nature">
-      <img src="images/DSC_0720.jpg" alt="Sunset over a mountain lodge in the Sawtooth Valley" class="lightbox-trigger" data-cap="Sawtooth Valley · Nature">
+      <img src="images/DSC_0720.jpg" alt="Sunset over a mountain lodge in the Sawtooth Valley" data-photo-id="DSC_0720" class="lightbox-trigger" data-cap="Sawtooth Valley · Nature">
       <div class="card-cap mono">Sawtooth Valley · Nature</div>
-      <div class="card-buy">
-        <div class="buy-row">
-          <span class="mono price">$15</span>
-          <button class="buy-btn mono" data-photo-id="DSC_0720" data-order-type="digital">Digital</button>
-        </div>
-        <div class="buy-row">
-          <span class="mono price">$79</span>
-          <button class="buy-btn mono print-btn" data-photo-id="DSC_0720" data-order-type="print">Print</button>
-        </div>
       </div>
     </div>
 
     <div class="card" data-cat="events">
-      <img src="images/DSC_2266.jpg" alt="Boise Gems horn player performing at dusk" class="lightbox-trigger" data-cap="Boise Gems · Event">
+      <img src="images/DSC_2266.jpg" alt="Boise Gems horn player performing at dusk" data-photo-id="DSC_2266" class="lightbox-trigger" data-cap="Boise Gems · Event">
       <div class="card-cap mono">Boise Gems · Event</div>
-      <div class="card-buy">
-        <div class="buy-row">
-          <span class="mono price">$20</span>
-          <button class="buy-btn mono" data-photo-id="DSC_2266" data-order-type="digital">Digital</button>
-        </div>
-        <div class="buy-row">
-          <span class="mono price">$79</span>
-          <button class="buy-btn mono print-btn" data-photo-id="DSC_2266" data-order-type="print">Print</button>
-        </div>
       </div>
     </div>
 
     <div class="card" data-cat="nature">
-      <img src="images/DSC_9351.jpg" alt="Golden grass hillside at sunset" class="lightbox-trigger" data-cap="High Desert Ridgeline · Nature">
+      <img src="images/DSC_9351.jpg" alt="Golden grass hillside at sunset" data-photo-id="DSC_9351" class="lightbox-trigger" data-cap="High Desert Ridgeline · Nature">
       <div class="card-cap mono">High Desert Ridgeline · Nature</div>
-      <div class="card-buy">
-        <div class="buy-row">
-          <span class="mono price">$15</span>
-          <button class="buy-btn mono" data-photo-id="DSC_9351" data-order-type="digital">Digital</button>
-        </div>
-        <div class="buy-row">
-          <span class="mono price">$79</span>
-          <button class="buy-btn mono print-btn" data-photo-id="DSC_9351" data-order-type="print">Print</button>
-        </div>
       </div>
     </div>
 
     <div class="card" data-cat="portraits">
-      <img src="images/DSC_5497.jpg" alt="Man standing beside a Mazda Miata in the fog" class="lightbox-trigger" data-cap="Foggy Morning · Portrait">
+      <img src="images/DSC_5497.jpg" alt="Man standing beside a Mazda Miata in the fog" data-photo-id="DSC_5497" class="lightbox-trigger" data-cap="Foggy Morning · Portrait">
       <div class="card-cap mono">Foggy Morning · Portrait</div>
-      <div class="card-buy">
-        <div class="buy-row">
-          <span class="mono price">$25</span>
-          <button class="buy-btn mono" data-photo-id="DSC_5497" data-order-type="digital">Digital</button>
-        </div>
-        <div class="buy-row">
-          <span class="mono price">$79</span>
-          <button class="buy-btn mono print-btn" data-photo-id="DSC_5497" data-order-type="print">Print</button>
-        </div>
       </div>
     </div>
 
     <div class="card" data-cat="nature">
-      <img src="images/DSC_4872.jpg" alt="Layered blue mountain ridgelines" class="lightbox-trigger" data-cap="Ridgeline Layers · Nature">
+      <img src="images/DSC_4872.jpg" alt="Layered blue mountain ridgelines" data-photo-id="DSC_4872" class="lightbox-trigger" data-cap="Ridgeline Layers · Nature">
       <div class="card-cap mono">Ridgeline Layers · Nature</div>
-      <div class="card-buy">
-        <div class="buy-row">
-          <span class="mono price">$15</span>
-          <button class="buy-btn mono" data-photo-id="DSC_4872" data-order-type="digital">Digital</button>
-        </div>
-        <div class="buy-row">
-          <span class="mono price">$79</span>
-          <button class="buy-btn mono print-btn" data-photo-id="DSC_4872" data-order-type="print">Print</button>
-        </div>
       </div>
     </div>
 
     <div class="card" data-cat="events">
-      <img src="images/DSC_2218.jpg" alt="Boise Gems drummer performing" class="lightbox-trigger" data-cap="Boise Gems · Event">
+      <img src="images/DSC_2218.jpg" alt="Boise Gems drummer performing" data-photo-id="DSC_2218" class="lightbox-trigger" data-cap="Boise Gems · Event">
       <div class="card-cap mono">Boise Gems · Event</div>
-      <div class="card-buy">
-        <div class="buy-row">
-          <span class="mono price">$20</span>
-          <button class="buy-btn mono" data-photo-id="DSC_2218" data-order-type="digital">Digital</button>
-        </div>
-        <div class="buy-row">
-          <span class="mono price">$79</span>
-          <button class="buy-btn mono print-btn" data-photo-id="DSC_2218" data-order-type="print">Print</button>
-        </div>
       </div>
     </div>
 
     <div class="card" data-cat="nature">
-      <img src="images/DSC_4983.jpg" alt="Golden hillside grass" class="lightbox-trigger" data-cap="Evening Light · Nature">
+      <img src="images/DSC_4983.jpg" alt="Golden hillside grass" data-photo-id="DSC_4983" class="lightbox-trigger" data-cap="Evening Light · Nature">
       <div class="card-cap mono">Evening Light · Nature</div>
-      <div class="card-buy">
-        <div class="buy-row">
-          <span class="mono price">$15</span>
-          <button class="buy-btn mono" data-photo-id="DSC_4983" data-order-type="digital">Digital</button>
-        </div>
-        <div class="buy-row">
-          <span class="mono price">$79</span>
-          <button class="buy-btn mono print-btn" data-photo-id="DSC_4983" data-order-type="print">Print</button>
-        </div>
       </div>
     </div>
 
     <div class="card" data-cat="nature">
-      <img src="images/DSC_9546.jpg" alt="Mallard ducks resting on a log in a marsh" class="lightbox-trigger" data-cap="Marsh Life · Wildlife">
+      <img src="images/DSC_9546.jpg" alt="Mallard ducks resting on a log in a marsh" data-photo-id="DSC_9546" class="lightbox-trigger" data-cap="Marsh Life · Wildlife">
       <div class="card-cap mono">Marsh Life · Wildlife</div>
-      <div class="card-buy">
-        <div class="buy-row">
-          <span class="mono price">$15</span>
-          <button class="buy-btn mono" data-photo-id="DSC_9546" data-order-type="digital">Digital</button>
-        </div>
-        <div class="buy-row">
-          <span class="mono price">$79</span>
-          <button class="buy-btn mono print-btn" data-photo-id="DSC_9546" data-order-type="print">Print</button>
-        </div>
       </div>
     </div>
 
-    <div class="card" data-cat="portraits">
-      <img src="images/DSC_0859.jpg" alt="Self portrait with a camera" class="lightbox-trigger" data-cap="Self Portrait">
-      <div class="card-cap mono">Self Portrait</div>
-    </div>
-
     <div class="card" data-cat="nature">
-      <img src="images/DSC_4784.jpg" alt="Camper van parked in the mountains at sunset" class="lightbox-trigger" data-cap="Backcountry Camp · Nature">
+      <img src="images/DSC_4784.jpg" alt="Camper van parked in the mountains at sunset" data-photo-id="DSC_4784" class="lightbox-trigger" data-cap="Backcountry Camp · Nature">
       <div class="card-cap mono">Backcountry Camp · Nature</div>
-      <div class="card-buy">
-        <div class="buy-row">
-          <span class="mono price">$15</span>
-          <button class="buy-btn mono" data-photo-id="DSC_4784" data-order-type="digital">Digital</button>
-        </div>
-        <div class="buy-row">
-          <span class="mono price">$79</span>
-          <button class="buy-btn mono print-btn" data-photo-id="DSC_4784" data-order-type="print">Print</button>
-        </div>
       </div>
     </div>
 
@@ -534,45 +421,12 @@
 <div class="lightbox" id="lightbox">
   <button class="lightbox-close" id="lightboxClose" aria-label="Close">✕</button>
   <img src="" alt="" id="lightboxImg">
+  <a class="lightbox-buy mono" id="lightboxBuy" href="#">Buy This Photo →</a>
   <div class="lightbox-cap mono" id="lightboxCap"></div>
 </div>
 
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
-
-  // ---- Shop: connect Purchase buttons to the Cloudflare Worker ----
-  // Set this to your deployed Worker URL once it's live (see worker/README-DEPLOY.md)
-  const WORKER_URL = "https://forytography-shop.forytographysubdomain.workers.dev";
-
-  document.querySelectorAll('.buy-btn').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      e.stopPropagation(); // don't trigger the lightbox
-      const photoId = btn.dataset.photoId;
-      const orderType = btn.dataset.orderType || 'digital';
-      const originalText = btn.textContent;
-      btn.disabled = true;
-      btn.textContent = 'Loading…';
-      try {
-        const res = await fetch(`${WORKER_URL}/create-checkout`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ photoId, orderType })
-        });
-        const data = await res.json();
-        if (data.url) {
-          window.location.href = data.url;
-        } else {
-          alert(data.error || 'Something went wrong starting checkout.');
-          btn.disabled = false;
-          btn.textContent = originalText;
-        }
-      } catch (err) {
-        alert('Could not reach the shop right now. Please try again shortly.');
-        btn.disabled = false;
-        btn.textContent = originalText;
-      }
-    });
-  });
 
   // ---- Gallery filters ----
   const buttons = document.querySelectorAll('.filters button');
@@ -594,11 +448,18 @@
   const lightboxImg = document.getElementById('lightboxImg');
   const lightboxCap = document.getElementById('lightboxCap');
   const lightboxClose = document.getElementById('lightboxClose');
+  const lightboxBuy = document.getElementById('lightboxBuy');
 
-  function openLightbox(src, alt, cap){
+  function openLightbox(src, alt, cap, photoId){
     lightboxImg.src = src;
     lightboxImg.alt = alt || '';
     lightboxCap.textContent = cap || '';
+    if(photoId){
+      lightboxBuy.href = `photo.html?id=${encodeURIComponent(photoId)}`;
+      lightboxBuy.style.display = 'inline-block';
+    } else {
+      lightboxBuy.style.display = 'none';
+    }
     lightbox.classList.add('active');
     document.body.style.overflow = 'hidden';
   }
@@ -609,7 +470,7 @@
 
   document.querySelectorAll('.lightbox-trigger').forEach(img => {
     img.addEventListener('click', () => {
-      openLightbox(img.src, img.alt, img.dataset.cap);
+      openLightbox(img.src, img.alt, img.dataset.cap, img.dataset.photoId);
     });
   });
 

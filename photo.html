@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forytography</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Newsreader:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EFF1EA; --paper:#F8F7F2; --ink:#1F2620; --ink-soft:#4B5449;
+    --gold:#C99A3B; --sage:#6B7A5E; --line:#C9C6BC;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; min-height:100vh; background:var(--bg); color:var(--ink);
+    font-family:'Newsreader', serif;
+  }
+  h1,h2{
+    font-family:'Big Shoulders Display', sans-serif; text-transform:uppercase;
+    letter-spacing:0.01em; line-height:0.95; margin:0; font-weight:900;
+  }
+  .mono{ font-family:'JetBrains Mono', monospace; letter-spacing:0.08em; text-transform:uppercase; }
+  a{ color:inherit; }
+
+  .nav{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px clamp(20px,4vw,56px);
+    background:rgba(239,241,234,0.85); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav .logo{ font-size:22px; font-weight:900; letter-spacing:0.02em; text-decoration:none; }
+  .nav .links{ display:flex; gap:clamp(14px,2vw,32px); }
+  .nav .links a{
+    font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.12em;
+    text-transform:uppercase; text-decoration:none; color:var(--ink-soft);
+    border-bottom:1px solid transparent; padding-bottom:3px; transition:color .2s, border-color .2s;
+  }
+  .nav .links a:hover{ color:var(--ink); border-color:var(--gold); }
+  @media (max-width:760px){ .nav .links{ display:none; } }
+
+  .wrap{ max-width:1100px; margin:0 auto; padding:120px 24px 100px; }
+  .back-link{
+    display:inline-block; margin-bottom:32px; color:var(--ink-soft);
+    font-size:11px; text-decoration:none; border-bottom:1px solid var(--line);
+  }
+  .back-link:hover{ color:var(--ink); border-color:var(--ink); }
+
+  .product{ display:grid; grid-template-columns:1.3fr 1fr; gap:clamp(32px,5vw,64px); align-items:start; }
+  @media (max-width:800px){ .product{ grid-template-columns:1fr; } }
+
+  .product-img{ width:100%; height:auto; display:block; background:var(--ink); }
+
+  .eyebrow{ color:var(--sage); font-size:11px; display:block; margin-bottom:14px; }
+  .product-info h1{ font-size:clamp(32px,5vw,52px); margin-bottom:24px; }
+  .product-desc{ color:var(--ink-soft); font-size:16px; line-height:1.7; margin-bottom:36px; }
+
+  .option{
+    border:1px solid var(--line); background:var(--paper);
+    padding:22px 24px; margin-bottom:16px;
+  }
+  .option h3{
+    font-family:'Big Shoulders Display', sans-serif; text-transform:uppercase;
+    font-weight:900; font-size:19px; margin:0 0 6px;
+  }
+  .option p{ color:var(--ink-soft); font-size:14px; margin:0 0 16px; line-height:1.5; }
+  .option-row{ display:flex; align-items:center; justify-content:space-between; gap:16px; }
+  .option .price{ font-size:20px; }
+  .buy-btn{
+    background:var(--ink); color:var(--paper); border:none;
+    padding:14px 26px; font-family:'JetBrains Mono', monospace; font-size:12px;
+    letter-spacing:0.08em; text-transform:uppercase; cursor:pointer;
+    transition:background .2s, transform .15s;
+  }
+  .buy-btn:hover{ background:var(--sage); }
+  .buy-btn:active{ transform:scale(0.97); }
+  .buy-btn[disabled]{ opacity:0.6; cursor:wait; }
+  .option.print .buy-btn{ background:var(--gold); color:#241C0D; }
+  .option.print .buy-btn:hover{ background:#DCAE52; }
+
+  .error-msg{ color:#a14a3a; font-size:13px; font-family:'JetBrains Mono', monospace; margin-top:10px; display:none; }
+  .loading, .not-found{ text-align:center; padding:120px 24px; color:var(--ink-soft); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="logo" href="index.html">FORYTOGRAPHY</a>
+  <div class="links">
+    <a href="index.html#about">About</a>
+    <a href="index.html#work">Work</a>
+    <a href="index.html#contact">Contact</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <a class="back-link mono" href="index.html#work">← Back to the gallery</a>
+
+  <div id="loadingView" class="loading">Loading…</div>
+
+  <div id="notFoundView" class="not-found" style="display:none;">
+    <p>Couldn't find that photo.</p>
+    <a class="back-link mono" href="index.html#work">← Back to the gallery</a>
+  </div>
+
+  <div class="product" id="productView" style="display:none;">
+    <img id="productImg" class="product-img" src="" alt="">
+    <div class="product-info">
+      <span class="eyebrow mono" id="productCategory"></span>
+      <h1 id="productName"></h1>
+      <p class="product-desc" id="productDesc"></p>
+
+      <div class="option">
+        <h3>Digital Download</h3>
+        <p>Full-resolution, watermark-free JPEG delivered instantly after purchase.</p>
+        <div class="option-row">
+          <span class="mono price" id="digitalPrice"></span>
+          <button class="buy-btn mono" id="digitalBtn" data-order-type="digital">Buy Digital</button>
+        </div>
+      </div>
+
+      <div class="option print">
+        <h3>16×24 Fine Art Print</h3>
+        <p>Hahnemühle Photo Rag archival paper, printed and shipped to your door within the US.</p>
+        <div class="option-row">
+          <span class="mono price" id="printPrice"></span>
+          <button class="buy-btn mono" id="printBtn" data-order-type="print">Buy Print</button>
+        </div>
+      </div>
+
+      <p class="error-msg" id="errorMsg"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const WORKER_URL = "https://forytography-shop.forytographysubdomain.workers.dev";
+  const photoId = new URLSearchParams(window.location.search).get("id");
+
+  const loadingView = document.getElementById("loadingView");
+  const notFoundView = document.getElementById("notFoundView");
+  const productView = document.getElementById("productView");
+  const errorMsg = document.getElementById("errorMsg");
+
+  function formatPrice(cents){ return `$${(cents / 100).toFixed(0)}`; }
+
+  async function load(){
+    if(!photoId){
+      loadingView.style.display = "none";
+      notFoundView.style.display = "block";
+      return;
+    }
+    try {
+      const res = await fetch(`${WORKER_URL}/photo?id=${encodeURIComponent(photoId)}`);
+      if(!res.ok){
+        loadingView.style.display = "none";
+        notFoundView.style.display = "block";
+        return;
+      }
+      const photo = await res.json();
+
+      document.title = `${photo.name} — Forytography`;
+      document.getElementById("productImg").src = `images/${photo.id}.jpg`;
+      document.getElementById("productImg").alt = photo.name;
+      document.getElementById("productCategory").textContent = photo.caption || photo.category;
+      document.getElementById("productName").textContent = photo.name;
+      document.getElementById("productDesc").textContent = `${photo.name} — a fine art photograph from Forytography, available as a digital download or a museum-quality print.`;
+      document.getElementById("digitalPrice").textContent = formatPrice(photo.priceCents);
+      document.getElementById("printPrice").textContent = formatPrice(photo.printPriceCents);
+
+      loadingView.style.display = "none";
+      productView.style.display = "grid";
+    } catch(err){
+      loadingView.style.display = "none";
+      notFoundView.style.display = "block";
+    }
+  }
+
+  document.querySelectorAll(".buy-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const orderType = btn.dataset.orderType;
+      const originalText = btn.textContent;
+      errorMsg.style.display = "none";
+      btn.disabled = true;
+      btn.textContent = "Loading…";
+      try {
+        const res = await fetch(`${WORKER_URL}/create-checkout`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ photoId, orderType })
+        });
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          errorMsg.textContent = data.error || "Something went wrong starting checkout.";
+          errorMsg.style.display = "block";
+          btn.disabled = false;
+          btn.textContent = originalText;
+        }
+      } catch (err) {
+        errorMsg.textContent = "Could not reach the shop right now. Please try again shortly.";
+        errorMsg.style.display = "block";
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    });
+  });
+
+  load();
+</script>
+</body>
+</html>

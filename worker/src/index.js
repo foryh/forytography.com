@@ -5,6 +5,7 @@
  *   1. POST /create-checkout   -> creates a Stripe Checkout Session for a photo, returns the payment URL
  *                                  (pass orderType: "digital" or "print" — print adds shipping address
  *                                  collection and charges PRINT_PRICE_CENTS instead of the digital price)
+ *   1b. GET /photo             -> public metadata for one photo (name, category, prices) — powers photo.html
  *   2. GET  /get-download      -> verifies payment with Stripe, then streams the real file from R2 (digital orders)
  *   2b. GET /print/fulfill     -> verifies payment with Stripe, then places the order with Prodigi (print orders)
  *   2c. GET /print/asset       -> streams a full-res original to Prodigi using a short-lived one-time
@@ -27,16 +28,16 @@
  */
 
 const PHOTOS = {
-  "DSC_0707": { name: "Sawtooth Range at Dusk",        priceCents: 1500, r2Key: "originals/DSC_0707.jpg" },
-  "DSC_0720": { name: "Sawtooth Valley Sunset",        priceCents: 1500, r2Key: "originals/DSC_0720.jpg" },
-  "DSC_9351": { name: "High Desert Ridgeline",         priceCents: 1500, r2Key: "originals/DSC_9351.jpg" },
-  "DSC_9546": { name: "Marsh Life",                    priceCents: 1500, r2Key: "originals/DSC_9546.jpg" },
-  "DSC_4872": { name: "Ridgeline Layers",              priceCents: 1500, r2Key: "originals/DSC_4872.jpg" },
-  "DSC_4784": { name: "Backcountry Camp",              priceCents: 1500, r2Key: "originals/DSC_4784.jpg" },
-  "DSC_4983": { name: "Evening Light",                 priceCents: 1500, r2Key: "originals/DSC_4983.jpg" },
-  "DSC_5497": { name: "Foggy Morning Portrait",        priceCents: 2500, r2Key: "originals/DSC_5497.jpg" },
-  "DSC_2218": { name: "Boise Gems - Drummer",          priceCents: 2000, r2Key: "originals/DSC_2218.jpg" },
-  "DSC_2266": { name: "Boise Gems - Horn Player",       priceCents: 2000, r2Key: "originals/DSC_2266.jpg" }
+  "DSC_0707": { name: "Sawtooth Range at Dusk",        priceCents: 1500, category: "nature",    caption: "Sawtooth Range · Nature",   r2Key: "originals/DSC_0707.jpg" },
+  "DSC_0720": { name: "Sawtooth Valley Sunset",        priceCents: 1500, category: "nature",    caption: "Sawtooth Valley · Nature",  r2Key: "originals/DSC_0720.jpg" },
+  "DSC_9351": { name: "High Desert Ridgeline",         priceCents: 1500, category: "nature",    caption: "High Desert Ridgeline · Nature", r2Key: "originals/DSC_9351.jpg" },
+  "DSC_9546": { name: "Marsh Life",                    priceCents: 1500, category: "nature",    caption: "Marsh Life · Wildlife",     r2Key: "originals/DSC_9546.jpg" },
+  "DSC_4872": { name: "Ridgeline Layers",              priceCents: 1500, category: "nature",    caption: "Ridgeline Layers · Nature", r2Key: "originals/DSC_4872.jpg" },
+  "DSC_4784": { name: "Backcountry Camp",              priceCents: 1500, category: "nature",    caption: "Backcountry Camp · Nature", r2Key: "originals/DSC_4784.jpg" },
+  "DSC_4983": { name: "Evening Light",                 priceCents: 1500, category: "nature",    caption: "Evening Light · Nature",    r2Key: "originals/DSC_4983.jpg" },
+  "DSC_5497": { name: "Foggy Morning Portrait",        priceCents: 2500, category: "portraits", caption: "Foggy Morning · Portrait",  r2Key: "originals/DSC_5497.jpg" },
+  "DSC_2218": { name: "Boise Gems - Drummer",          priceCents: 2000, category: "events",    caption: "Boise Gems · Event",        r2Key: "originals/DSC_2218.jpg" },
+  "DSC_2266": { name: "Boise Gems - Horn Player",       priceCents: 2000, category: "events",    caption: "Boise Gems · Event",        r2Key: "originals/DSC_2266.jpg" }
 };
 
 // ---- Fine-art print offering (single size/style for now) ----
@@ -61,6 +62,9 @@ export default {
     try {
       if (url.pathname === "/create-checkout" && request.method === "POST") {
         return await createCheckout(request, env, cors);
+      }
+      if (url.pathname === "/photo" && request.method === "GET") {
+        return await getPhotoInfo(url, env, cors);
       }
       if (url.pathname === "/get-download" && request.method === "GET") {
         return await getDownload(url, env, cors);
@@ -257,6 +261,25 @@ async function clientsAccess(request, env, cors) {
   return new Response(JSON.stringify({ error: "Incorrect passkey" }), {
     status: 403, headers: { ...cors, "Content-Type": "application/json" }
   });
+}
+
+// ---- Public metadata for one photo, for the product page ----
+async function getPhotoInfo(url, env, cors) {
+  const id = url.searchParams.get("id");
+  const photo = PHOTOS[id];
+  if (!photo) {
+    return new Response(JSON.stringify({ error: "Photo not found" }), {
+      status: 404, headers: { ...cors, "Content-Type": "application/json" }
+    });
+  }
+  return new Response(JSON.stringify({
+    id,
+    name: photo.name,
+    category: photo.category,
+    caption: photo.caption,
+    priceCents: photo.priceCents,
+    printPriceCents: PRINT_PRICE_CENTS
+  }), { headers: { ...cors, "Content-Type": "application/json" } });
 }
 
 // ---- Create a Stripe Checkout Session for one photo (digital download or print) ----
