@@ -81,8 +81,9 @@ const PHOTOS = {
 // matches a DSLR's native 3:2 aspect, so the full photo prints edge-to-edge
 // with no cropping or padding. Prodigi's cost is ~$33 (print + US shipping);
 // $80 leaves a healthy margin after that and Stripe's fee.
+// TEMPORARY: dropped to ~cost for a one-time live end-to-end test — restore to 8000 after.
 const PRINT_SKU = "GLOBAL-HPR-16X24";
-const PRINT_PRICE_CENTS = 8000;
+const PRINT_PRICE_CENTS = 3500;
 const PRINT_ASSET_TOKEN_TTL_SECONDS = 60 * 60 * 48; // 48 hours — plenty for Prodigi to fetch + retry
 
 export default {
