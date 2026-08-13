@@ -31,10 +31,8 @@ FROM_EMAIL = "Forytography <inquiries@forytography.com>"
 # Prodigi needs a URL it can fetch the print file from directly, not your site's HTML.
 SITE_WORKER_URL = "https://forytography-shop.forytographysubdomain.workers.dev"
 
-# Prodigi's sandbox environment — safe for testing, nothing gets printed/shipped/charged.
-# Once you're ready to sell real prints: change this to "https://api.prodigi.com" AND
-# replace the PRODIGI_API_KEY secret below with a Live key (not Sandbox).
-PRODIGI_BASE_URL = "https://api.sandbox.prodigi.com"
+# Prodigi's live environment — real orders get printed, shipped, and charged.
+PRODIGI_BASE_URL = "https://api.prodigi.com"
 
 # ---- Secret settings (do NOT put these here — set them with the commands below instead) ----
 # wrangler secret put STRIPE_SECRET_KEY
