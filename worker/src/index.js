@@ -345,7 +345,8 @@ async function createCheckout(request, env, cors) {
     cancel_url: `${siteUrl}/index.html`,
     "metadata[photoId]": photoId,
     "metadata[orderType]": isPrint ? "print" : "digital",
-    "managed_payments[enabled]": "false"
+    "managed_payments[enabled]": "false",
+    "allow_promotion_codes": "true"
   };
 
   if (isPrint) {
